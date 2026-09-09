@@ -17,6 +17,7 @@
     listEmpty: $('listEmpty'),
     detail: $('detail'),
     detailEmpty: $('detailEmpty'),
+    signIn: $('signInBtn'),
     subject: $('dSubject'),
     from: $('dFrom'),
     date: $('dDate'),
@@ -333,7 +334,10 @@
         if (interactive) toast(err.message);
         else console.warn('Sinxronizatsiya:', err.message);
       })
-      .then(function () { ui.syncing = false; });
+      .then(function () {
+        ui.syncing = false;
+        updateAuthUi();
+      });
   }
 
   function schedulePolling() {
@@ -352,16 +356,32 @@
       if (confirm('Gmail hisobidan chiqasizmi?')) {
         Gmail.signOut();
         el.account.textContent = 'ulanmagan';
-        setStatus('off', 'Oflayn');
+        setStatus('off', 'Kirish kerak');
+        updateAuthUi();
       }
       return;
     }
-    sync(true).then(loadProfile);
+    signInFlow();
   });
+
+  el.signIn.addEventListener('click', signInFlow);
 
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') sync(false);
   });
+
+  function updateAuthUi() {
+    var signedIn = Gmail.isSignedIn();
+    el.signIn.hidden = signedIn || !Gmail.isConfigured();
+    el.statusPill.title = signedIn ? 'Chiqish uchun bosing' : 'Kirish uchun bosing';
+  }
+
+  function signInFlow() {
+    return sync(true).then(function () {
+      updateAuthUi();
+      return loadProfile();
+    });
+  }
 
   function loadProfile() {
     if (!Gmail.isSignedIn()) return;
@@ -406,7 +426,7 @@
       Notification.requestPermission();
     }
     toast('Sozlamalar saqlandi.');
-    sync(true).then(loadProfile);
+    signInFlow();
   });
 
   /* ---------- ishga tushirish ---------- */
@@ -427,6 +447,7 @@
       if (Gmail.wasSignedIn()) sync(false).then(loadProfile);
       else setStatus('off', 'Kirish kerak');
     }
+    updateAuthUi();
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {

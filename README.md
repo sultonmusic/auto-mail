@@ -17,9 +17,11 @@ Serversiz ishlaydi: butun mantiq brauzerda, GitHub Pages'da bepul turadi. PWA �
 
 ## Ishga tushirish
 
-### 1. Google OAuth Client ID olish
+### 1. Google OAuth Client ID
 
-Ilova to'g'ridan-to'g'ri Gmail API bilan gaplashadi, shuning uchun o'zingizning Client ID kerak (bu maxfiy kalit emas, kodda saqlanmaydi):
+Loyihaning Client ID'si kodga kiritilgan (`store.js` → `DEFAULT_CLIENT_ID`), shuning uchun odatda hech narsa qilish shart emas. OAuth client ID ochiq bo'lishi mo'ljallangan qiymat — maxfiysi client secret, u bu ilovada umuman ishlatilmaydi.
+
+Boshqa Google loyihasiga o'tmoqchi bo'lsangiz, yangi ID ni ⚙ Sozlamalardan qo'ysangiz bo'ladi (u kodagisini bosib o'tadi). Noldan olish tartibi:
 
 1. [console.cloud.google.com](https://console.cloud.google.com/projectcreate) da yangi loyiha oching.
 2. **APIs & Services → Library** da `Gmail API` ni yoqing.
@@ -37,7 +39,8 @@ Bir necha daqiqadan so'ng manzil: `https://sultonmusic.github.io/auto-mail/`
 
 ### 3. Ilovani sozlash
 
-Saytni oching → ⚙ **Sozlamalar** → Client ID ni qo'ying → **Saqlash** → Google hisobiga kiring va ruxsat bering.
+Saytni oching → **Google bilan kirish** tugmasini bosing → hisobni tanlang va ruxsat bering.
+(Boshqa Client ID ishlatmoqchi bo'lsangiz: ⚙ **Sozlamalar** → Client ID → **Saqlash**.)
 
 Statusdagi «Ulangan» yozuvi paydo bo'lsa, navbat ishlay boshlaydi.
 
@@ -52,7 +55,7 @@ python3 -m http.server 8080
 
 | Sozlama | Ma'nosi |
 |---|---|
-| **Client ID** | Google OAuth Web client identifikatori |
+| **Client ID** | Google OAuth Web client identifikatori. Bo'sh qoldirilsa, kodagi standart ID ishlatiladi |
 | **Gmail qidiruv sharti** | Qaysi xatlar navbatga olinishi. Standart: `in:inbox -from:me newer_than:7d`. Masalan faqat o'qilmaganlar: `is:unread in:inbox` |
 | **Avtomatik tekshiruv** | Necha soniyada bir Gmail tekshirilsin (15–3600) |
 | **Bildirishnoma** | Yangi xat kelganda brauzer bildirishnomasi |

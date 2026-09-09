@@ -7,6 +7,11 @@
 
   var KEY = 'automail.v1';
 
+  /* Loyihaning o'z Google OAuth Client ID'si. Bu maxfiy kalit emas —
+     OAuth client ID ochiq bo'lishi mo'ljallangan (maxfiysi client secret,
+     u bu ilovada umuman ishlatilmaydi). Sozlamalardan almashtirsa bo'ladi. */
+  var DEFAULT_CLIENT_ID = '340616217035-qsf3k081e3fo0ob7a5159it2l45dtc20.apps.googleusercontent.com';
+
   var DEFAULTS = {
     settings: {
       clientId: '',
@@ -43,6 +48,7 @@
   }
 
   var state = load();
+  if (!state.settings.clientId) state.settings.clientId = DEFAULT_CLIENT_ID;
 
   function persist() {
     try {

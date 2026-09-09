@@ -175,6 +175,7 @@ a { color: var(--accent); }
 .detail-empty { display: grid; place-items: center; gap: 8px; text-align: center; padding: 60px 24px; color: var(--muted); }
 .detail-empty h2 { margin: 0; color: var(--text); font-size: 18px; }
 .detail-empty p { margin: 0; max-width: 34ch; }
+#signInBtn { margin: 8px 0 0; }
 .detail { padding: 16px; }
 .detail-head h2 { margin: 0 0 6px; font-size: 19px; }
 .meta { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
