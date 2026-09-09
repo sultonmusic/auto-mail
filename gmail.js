@@ -212,6 +212,19 @@
     isConfigured: function () { return !!clientId; },
     isSignedIn: function () { return !!accessToken && Date.now() < tokenExpiresAt; },
 
+    /** Token muddati tugashiga necha soniya qolgani. */
+    secondsLeft: function () {
+      return accessToken ? Math.max(0, Math.round((tokenExpiresAt - Date.now()) / 1000)) : 0;
+    },
+
+    /** Muddati tugashini kutmasdan, jimgina yangi token oladi.
+        Shu tufayli sahifa qayta ochilganda kirish qayta so'ralmaydi. */
+    renew: function () {
+      accessToken = '';
+      tokenExpiresAt = 0;
+      return ensureToken(false);
+    },
+
     /** Ilgari kirgan bo'lsa, oyna ochmasdan sessiyani tiklashga urinadi. */
     wasSignedIn: function () {
       try { return localStorage.getItem(SESSION_KEY) === '1'; } catch (err) { return false; }
@@ -254,6 +267,38 @@
       });
       return request('/messages?' + params.toString()).then(function (data) {
         return data.messages || [];
+      });
+    },
+
+    /** Pochta hozirgi holatining belgisi — keyingi tekshiruv shundan boshlanadi. */
+    historyId: function () {
+      return request('/profile').then(function (profile) { return profile.historyId; });
+    },
+
+    /**
+     * O'zgarishlar tarixi: oxirgi tekshiruvdan beri qo'shilgan xatlar.
+     * To'liq ro'yxatni so'rashdan ancha arzon, shuning uchun tez-tez
+     * chaqirish mumkin. Belgi eskirgan bo'lsa null qaytaradi.
+     */
+    history: function (startHistoryId) {
+      var params = new URLSearchParams({
+        startHistoryId: String(startHistoryId),
+        historyTypes: 'messageAdded',
+        labelId: 'INBOX',
+        maxResults: '100'
+      });
+      return request('/history?' + params.toString()).then(function (data) {
+        var ids = [];
+        (data.history || []).forEach(function (entry) {
+          (entry.messagesAdded || []).forEach(function (added) {
+            if (added.message && ids.indexOf(added.message.id) === -1) ids.push(added.message.id);
+          });
+        });
+        return { ids: ids, historyId: data.historyId };
+      }, function (err) {
+        /* 404 — belgi juda eskirgan; chaqiruvchi to'liq tekshiruvga o'tadi. */
+        if (/not found|404|invalid/i.test(err.message)) return null;
+        throw err;
       });
     },
 

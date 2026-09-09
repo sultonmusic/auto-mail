@@ -16,7 +16,7 @@
     settings: {
       clientId: '',
       query: 'in:inbox -from:me newer_than:7d',
-      pollSeconds: 60,
+      pollSeconds: 20,
       notify: false,
       signature: '',
       theme: 'auto',
@@ -39,7 +39,8 @@
     },
     tickets: {},   // threadId -> ticket
     templates: [], // { title, body }
-    lastSync: 0
+    lastSync: 0,
+    historyId: ''  // Gmail tarixidagi oxirgi belgi
   };
 
   function clone(value) {
@@ -56,6 +57,7 @@
         state.tickets = saved.tickets || {};
         state.templates = Array.isArray(saved.templates) ? saved.templates : [];
         state.lastSync = saved.lastSync || 0;
+        state.historyId = saved.historyId || '';
       }
     } catch (err) {
       console.warn('Saqlangan holatni o\'qib bo\'lmadi:', err);
@@ -199,6 +201,12 @@
 
     setLastSync: function (time) {
       state.lastSync = time;
+      persist();
+    },
+
+    setHistoryId: function (id) {
+      if (!id || id === state.historyId) return;
+      state.historyId = String(id);
       persist();
     }
   };

@@ -6,11 +6,11 @@ Serversiz ishlaydi: butun mantiq brauzerda, GitHub Pages'da bepul turadi. PWA �
 
 ## Nima qiladi
 
-- **Avtomatik navbat.** Belgilangan oraliqda (standart 60 soniya) Gmail tekshiriladi, yangi xat topilsa navbatga qo'shiladi va bildirishnoma chiqadi.
+- **Deyarli real vaqtda.** Har **20 soniyada** (sozlanadi, eng kami 10) Gmail tekshiriladi. Tekshiruv Gmail'ning **History API**'si orqali ketadi — bu «oxirgi tekshiruvdan beri nima o'zgardi?» degan arzon so'rov, shuning uchun tez-tez so'rasa ham yuk bermaydi. Har 5 daqiqada bir marta to'liq qidiruv ham qilinadi, hech narsa e'tibordan qolmasin uchun. Oynaga qaytilganda va internet tiklanganda darhol yangilanadi.
 - **AI tahlil.** Har bir xat mavzusi, matni va jo'natuvchisi bo'yicha baholanadi: **Muhim** (ish bilan bog'liq so'zlar, savol, javobsiz turgan yozishma) tepaga chiqadi, **Bekorchi** (`jddhddldjdkdld` kabi ma'nosiz yozuvlar, robot xabarlari) bosh ro'yxatdan olib, alohida bo'limga tushadi. Tashqi xizmat kerak emas — tahlil brauzerda bajariladi. Xat ochilganda AI qarori sababi bilan ko'rsatiladi.
 - **Avtomatik javob.** Yangi xat kelishi bilan chiroyli HTML kartochka javob bo'lib ketadi: brend paneli, murojaat raqami, mavzu, sana, **javob berish muddati** va keyingi qadamlar. Javob mavzusining oxiriga murojaat raqami qo'shiladi: `Re: Hello [#7501809]`.
 - **Yangi xat.** Panelning o'zidan yangi manzilga xat yozish (xohlasangiz o'sha kartochka ko'rinishida).
-- **Doimiy kirish.** Bir marta ulangach, chiqmaguningizcha kirgan holicha qolasiz — brauzer yopilib ochilsa ham.
+- **Doimiy kirish.** Bir marta ulangach, chiqmaguningizcha kirgan holicha qolasiz — brauzer yopilib ochilsa ham. Token muddati tugashiga 8 daqiqa qolganda **oldindan, jimgina** yangilanadi, shuning uchun kirish qayta so'ralmaydi.
 - **Uch til.** Panel o'zbek, ingliz va rus tillarida — yuqoridagi 🌐 tanlagichdan almashadi. Mijozga ketadigan kartochka tili alohida sozlanadi (standart: ingliz).
 - **Admin panel.** Chapda navbat ro'yxati (kim, mavzu, qisqacha matn, vaqt), o'ngda to'liq xat.
 - **Statuslar.** Navbatda → Ishlanmoqda → Javob berilgan. Har bir bo'limda nechta xat borligi ko'rinib turadi.
@@ -72,7 +72,7 @@ python3 -m http.server 8080
 |---|---|
 | **Client ID** | Google OAuth Web client identifikatori. Bo'sh qoldirilsa, kodagi standart ID ishlatiladi |
 | **Gmail qidiruv sharti** | Qaysi xatlar navbatga olinishi. Standart: `in:inbox -from:me newer_than:7d`. Masalan faqat o'qilmaganlar: `is:unread in:inbox` |
-| **Avtomatik tekshiruv** | Necha soniyada bir Gmail tekshirilsin (15–3600) |
+| **Avtomatik tekshiruv** | Necha soniyada bir Gmail tekshirilsin (10–3600, standart 20) |
 | **Bildirishnoma** | Yangi xat kelganda brauzer bildirishnomasi |
 | **Imzo** | Qo'lda yozilgan javob oxiriga qo'shiladigan matn |
 | **Panel tili** | Interfeys tili (uz / en / ru) |

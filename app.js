@@ -110,10 +110,14 @@
   ];
 
   var COUNT_TTL = 5 * 60 * 1000;
+  var FULL_SYNC_EVERY = 5 * 60 * 1000;   // shuncha vaqtda bir marta to'liq tekshiruv
+  var RENEW_BEFORE = 8 * 60;             // token tugashiga shuncha soniya qolganda yangilanadi
 
   var ui = {
     filter: 'new', search: '', selected: null, current: null,
     timer: null, syncing: false, myEmail: '',
+    lastFullSync: 0,
+    authRetries: 0,
     box: BOXES[0],            // ochiq quti
     browse: [],               // Gmail'dan jonli o'qilgan xatlar
     browsing: false,
@@ -853,22 +857,30 @@
 
     return ready
       .then(function () { return ui.myEmail ? null : loadProfile(); })
-      .then(function () { return Gmail.listMessages(Store.settings.query, 40); })
-      .then(function (messages) {
+      .then(function () { return collectNewIds(interactive); })
+      .then(function (ids) {
         var known = {};
         Store.list().forEach(function (ticket) { known[ticket.messageId] = true; });
-        var fresh = messages.filter(function (message) { return !known[message.id]; });
-        return fresh.reduce(function (chain, message) {
-          return chain.then(function (added) {
-            return Gmail.getHeaders(message.id).then(function (mail) {
-              return added + (Store.upsertFromMail(mail) ? 1 : 0);
-            });
+        var fresh = ids.filter(function (id) { return !known[id]; });
+        if (!fresh.length) return 0;
+
+        return mapLimit(fresh, 4, function (id) {
+          return Gmail.getHeaders(id).catch(function () { return null; });
+        }).then(function (mails) {
+          var added = 0;
+          mails.filter(Boolean).forEach(function (mail) {
+            /* Tarix butun pochta bo'yicha keladi — o'z xatlarimizni o'tkazamiz. */
+            if (ui.myEmail && mail.fromEmail &&
+                mail.fromEmail.toLowerCase() === ui.myEmail.toLowerCase()) return;
+            if (Store.upsertFromMail(mail)) added++;
           });
-        }, Promise.resolve(0));
+          return added;
+        });
       })
       .then(function (added) {
         Store.setLastSync(Date.now());
         renderList();
+        ui.authRetries = 0;
         setStatus('on', t('status.connected') + ' · ' + formatDate(Date.now()));
         if (added > 0) {
           notifyNew(added);
@@ -886,8 +898,18 @@
       })
       .catch(function (err) {
         setStatus('err', t('status.error'));
-        if (interactive) toast(err.message);
-        else console.warn('Sinxronizatsiya:', err.message);
+        if (interactive) {
+          toast(err.message);
+          return;
+        }
+        console.warn('Sinxronizatsiya:', err.message);
+        /* Jimgina yangilash bir urinishda ishlamasligi mumkin (masalan,
+           tarmoq uzilgan). Kirishni so'rashdan oldin yana ikki marta
+           urinib ko'ramiz. */
+        if (Gmail.wasSignedIn() && ui.authRetries < 2) {
+          ui.authRetries++;
+          setTimeout(function () { sync(false); }, 4000 * ui.authRetries);
+        }
       })
       .then(function () {
         ui.syncing = false;
@@ -895,11 +917,49 @@
       });
   }
 
+  /**
+   * Yangi xatlarning identifikatorlarini qaytaradi.
+   * Odatda Gmail tarixidan (arzon va tez), vaqti-vaqti bilan esa
+   * to'liq qidiruv sharti bo'yicha — hech narsa e'tibordan qolmasligi uchun.
+   */
+  function collectNewIds(force) {
+    var needsFull = force || !Store.state.historyId ||
+      (Date.now() - ui.lastFullSync > FULL_SYNC_EVERY);
+
+    if (!needsFull) {
+      return Gmail.history(Store.state.historyId).then(function (result) {
+        if (!result) return fullScan();           // belgi eskirgan
+        Store.setHistoryId(result.historyId);
+        return result.ids;
+      });
+    }
+    return fullScan();
+  }
+
+  function fullScan() {
+    ui.lastFullSync = Date.now();
+    return Gmail.listMessages(Store.settings.query, 40).then(function (messages) {
+      return Gmail.historyId().then(function (id) {
+        Store.setHistoryId(id);
+        return messages.map(function (message) { return message.id; });
+      }, function () {
+        return messages.map(function (message) { return message.id; });
+      });
+    });
+  }
+
   function schedulePolling() {
     clearInterval(ui.timer);
-    var seconds = Math.max(15, Number(Store.settings.pollSeconds) || 60);
+    var seconds = Math.max(10, Number(Store.settings.pollSeconds) || 20);
     ui.timer = setInterval(function () {
-      if (document.visibilityState === 'visible') sync(false);
+      if (document.visibilityState !== 'visible') return;
+      /* Kirish muddati tugashini kutmaymiz — oldindan jimgina yangilaymiz,
+         shunda ilova qayta ochilganda login qayta so'ralmaydi. */
+      if (Gmail.isSignedIn() && Gmail.secondsLeft() < RENEW_BEFORE) {
+        Gmail.renew().then(function () { sync(false); }, function () { sync(false); });
+        return;
+      }
+      sync(false);
     }, seconds * 1000);
   }
 
@@ -945,6 +1005,12 @@
 
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') sync(false);
+  });
+
+  window.addEventListener('online', function () { sync(false); });
+  window.addEventListener('focus', function () {
+    /* Oynaga qaytilganda darhol yangilaymiz, keyingi taymerni kutmasdan. */
+    if (Date.now() - (Store.state.lastSync || 0) > 5000) sync(false);
   });
 
   function updateAuthUi() {
