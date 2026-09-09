@@ -20,17 +20,20 @@
       notify: false,
       signature: '',
       theme: 'auto',
+      lang: 'uz',               // panel tili
 
-      /* Avtomatik javob */
+      /* Avtomatik javob. Matn maydonlari bo'sh bo'lsa, javob tilidagi
+         tayyor matn ishlatiladi (i18n.js dagi card.defaultX). */
       autoReply: false,
       autoReplySince: 0,        // shu vaqtdan keyingi xatlargagina javob beriladi
+      cardLang: 'en',           // mijozga ketadigan kartochka tili
       brandName: 'Auto Mail',
       brandColor: '#1b2338',
-      autoReplyTitle: 'Xabaringiz qabul qilindi',
-      autoReplyText: 'Murojaatingiz ro\'yxatga olindi. Mutaxassisimiz uni ko\'rib chiqib, tez orada shu manzilga javob yozadi.',
-      autoReplySteps: 'Mutaxassis murojaatingizni ko\'rib chiqadi.\nZarur bo\'lsa, qo\'shimcha ma\'lumot uchun bog\'lanamiz.\nYakuniy javob shu manzilga alohida xat bo\'lib keladi.',
+      autoReplyTitle: '',
+      autoReplyText: '',
+      autoReplySteps: '',
       autoReplyUrl: '',
-      autoReplyButton: 'Saytga o\'tish',
+      autoReplyButton: '',
       autoReplyContact: ''
     },
     tickets: {},   // threadId -> ticket

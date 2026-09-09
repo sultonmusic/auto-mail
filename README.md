@@ -10,6 +10,7 @@ Serversiz ishlaydi: butun mantiq brauzerda, GitHub Pages'da bepul turadi. PWA �
 - **Avtomatik javob.** Yangi xat kelishi bilan chiroyli HTML kartochka javob bo'lib ketadi: brend paneli, murojaat raqami, mavzu, sana, keyingi qadamlar va tugma.
 - **Yangi xat.** Panelning o'zidan yangi manzilga xat yozish (xohlasangiz o'sha kartochka ko'rinishida).
 - **Doimiy kirish.** Bir marta ulangach, chiqmaguningizcha kirgan holicha qolasiz — brauzer yopilib ochilsa ham.
+- **Uch til.** Panel o'zbek, ingliz va rus tillarida — yuqoridagi 🌐 tanlagichdan almashadi. Mijozga ketadigan kartochka tili alohida sozlanadi (standart: ingliz).
 - **Admin panel.** Chapda navbat ro'yxati (kim, mavzu, qisqacha matn, vaqt), o'ngda to'liq xat.
 - **Statuslar.** Navbatda → Ishlanmoqda → Javob berilgan. Har bir bo'limda nechta xat borligi ko'rinib turadi.
 - **Javob yozish.** To'g'ridan-to'g'ri panelda javob yoziladi va Gmail orqali **o'sha tred ichida** yuboriladi (`In-Reply-To` sarlavhasi bilan).
@@ -63,14 +64,18 @@ python3 -m http.server 8080
 | **Avtomatik tekshiruv** | Necha soniyada bir Gmail tekshirilsin (15–3600) |
 | **Bildirishnoma** | Yangi xat kelganda brauzer bildirishnomasi |
 | **Imzo** | Qo'lda yozilgan javob oxiriga qo'shiladigan matn |
+| **Panel tili** | Interfeys tili (uz / en / ru) |
 | **Avtomatik javob** | Yangi xatga kartochkali javob avtomatik ketsin |
+| **Javob tili** | Mijozga ketadigan kartochka tili. Standart — **ingliz** |
 | **Brend nomi / rangi** | Kartochka yuqorisidagi panel |
 | **Javob sarlavhasi / matni** | Kartochka mazmuni |
 | **Keyingi qadamlar** | Raqamlangan ro'yxat — har bir qator alohida band |
 | **Tugma havolasi / yozuvi** | Kartochkadagi chaqiruv tugmasi (ixtiyoriy) |
 | **Bog'lanish e-pochtasi** | Kartochka pastidagi manzil (ixtiyoriy) |
 
-Matnlarda o'rin egallovchilar ishlaydi: `{ism}`, `{mavzu}`, `{ticket}`, `{sana}`.
+Matnlarda o'rin egallovchilar ishlaydi: `{name}`/`{ism}`, `{subject}`/`{mavzu}`, `{ticket}`, `{date}`/`{sana}`.
+
+Kartochka matn maydonlari **bo'sh** qoldirilsa, tanlangan javob tilidagi tayyor matn ishlatiladi — «Tanlangan tildagi tayyor matnni qo'yish» tugmasi uni maydonlarga chiqaradi.
 
 ### Avtomatik javob qanday himoyalangan
 
@@ -90,7 +95,8 @@ Xatolik bilan yuzlab xat ketib qolmasligi uchun bir nechta cheklov qo'yilgan:
 | `index.html` | Panel tuzilishi |
 | `style.css` | Dizayn, mavzular, mobil ko'rinish |
 | `store.js` | Navbat, statuslar, izoh va shablonlarni `localStorage` da saqlash |
-| `template.js` | Avtomatik javob kartochkasi (email uchun jadvalli HTML) va sana formatlari |
+| `i18n.js` | Panel va kartochka tarjimalari (uz / en / ru), sana formatlari |
+| `template.js` | Avtomatik javob kartochkasi (email uchun jadvalli HTML) |
 | `gmail.js` | Google avtorizatsiyasi va Gmail API (o'qish, javob yuborish, belgilash) |
 | `app.js` | Panel mantiqi: filtr, qidiruv, sinxronizatsiya, javob yuborish |
 | `service-worker.js` | Oflayn qobiq (Gmail so'rovlari keshlanmaydi) |

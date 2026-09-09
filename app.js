@@ -30,6 +30,10 @@
     markRead: $('markReadAfter'),
     templateSelect: $('templateSelect'),
     saveTemplate: $('saveTemplate'),
+    langSelect: $('langSelect'),
+    langSettings: $('langSelectSettings'),
+    cardLang: $('cardLangInput'),
+    loadDefaults: $('loadDefaultsBtn'),
     compose: $('composeBtn'),
     newChat: $('newChatBtn'),
     composeDialog: $('composeDialog'),
@@ -58,6 +62,8 @@
     originHint: $('originHint'),
     toast: $('toast')
   };
+
+  var t = function (key, vars) { return I18n.t(key, vars); };
 
   var ui = { filter: 'new', search: '', selected: null, timer: null, syncing: false, myEmail: '' };
 
@@ -98,6 +104,65 @@
     return Template.longDate(time);
   }
 
+  /* ---------- til ---------- */
+
+  function fillLangSelect(select, selected) {
+    select.innerHTML = I18n.list().map(function (item) {
+      return '<option value="' + item.code + '"' +
+        (item.code === selected ? ' selected' : '') + '>' + escapeHtml(item.name) + '</option>';
+    }).join('');
+  }
+
+  /** Butun sahifani tanlangan tilga o'giradi. */
+  function applyLanguage(lang) {
+    I18n.setLang(lang);
+    I18n.translate();
+    fillLangSelect(el.langSelect, I18n.lang);
+    fillLangSelect(el.langSettings, I18n.lang);
+    renderTemplates();
+    renderList();
+    updateAuthUi();
+    updateCardHints();
+
+    if (Gmail.isSignedIn()) {
+      el.account.textContent = ui.myEmail || t('status.connected');
+      setStatus('on', t('status.connected') + ' · ' + formatDate(Store.state.lastSync || Date.now()));
+    } else {
+      el.account.textContent = t('top.accountNone');
+      setStatus('off', Gmail.isConfigured() ? t('status.needSignIn') : t('status.unconfigured'));
+    }
+    if (ui.selected) openTicket(ui.selected);
+  }
+
+  function changeLanguage(lang) {
+    Store.saveSettings({ lang: lang });
+    applyLanguage(lang);
+  }
+
+  el.langSelect.addEventListener('change', function () { changeLanguage(el.langSelect.value); });
+  el.langSettings.addEventListener('change', function () { changeLanguage(el.langSettings.value); });
+
+  /** Kartochka maydonlari bo'sh bo'lsa — javob tilidagi tayyor matnni
+      placeholder qilib ko'rsatamiz, shunda nima ketishi ko'rinib turadi. */
+  function updateCardHints() {
+    var lang = el.cardLang.value || Store.settings.cardLang || 'en';
+    el.autoTitle.placeholder = I18n.card(lang, 'defaultTitle');
+    el.autoText.placeholder = I18n.card(lang, 'defaultText');
+    el.autoSteps.placeholder = I18n.card(lang, 'defaultSteps');
+    el.autoButton.placeholder = I18n.card(lang, 'defaultButton');
+  }
+
+  el.cardLang.addEventListener('change', updateCardHints);
+
+  el.loadDefaults.addEventListener('click', function () {
+    var lang = el.cardLang.value || 'en';
+    el.autoTitle.value = I18n.card(lang, 'defaultTitle');
+    el.autoText.value = I18n.card(lang, 'defaultText');
+    el.autoSteps.value = I18n.card(lang, 'defaultSteps');
+    el.autoButton.value = I18n.card(lang, 'defaultButton');
+    toast(t('toast.defaultsLoaded'));
+  });
+
   /* ---------- mavzu ---------- */
 
   function applyTheme(theme) {
@@ -110,7 +175,7 @@
     var next = order[(order.indexOf(Store.settings.theme) + 1) % order.length];
     Store.saveSettings({ theme: next });
     applyTheme(next);
-    toast('Mavzu: ' + ({ auto: 'tizimga mos', light: 'yorug\'', dark: 'qorong\'i' })[next]);
+    toast(t('toast.theme', { value: t('toast.theme' + next.charAt(0).toUpperCase() + next.slice(1)) }));
   });
 
   /* ---------- ro'yxat ---------- */
@@ -130,7 +195,7 @@
       if (node) node.textContent = counts[key];
     });
     var pendingCount = counts.new;
-    document.title = pendingCount ? '(' + pendingCount + ') Auto Mail' : 'Auto Mail — Gmail navbat';
+    document.title = (pendingCount ? '(' + pendingCount + ') ' : '') + 'Auto Mail';
   }
 
   function renderList() {
@@ -187,14 +252,16 @@
       el.body.innerHTML = '';
       el.body.appendChild(frame);
     } else {
-      el.body.innerHTML = '<p class="loading">Matn topilmadi — Gmail\'da oching.</p>';
+      el.body.innerHTML = '<p class="loading">' + escapeHtml(t('detail.noBody')) + '</p>';
     }
     if (parts.attachments && parts.attachments.length) {
       var note = document.createElement('p');
       note.className = 'attachments';
-      note.textContent = '📎 Ilova: ' + parts.attachments.map(function (file) {
-        return file.name + ' (' + Math.max(1, Math.round(file.size / 1024)) + ' KB)';
-      }).join(', ') + ' — Gmail\'da yuklab oling.';
+      note.textContent = t('detail.attachments', {
+        list: parts.attachments.map(function (file) {
+          return file.name + ' (' + Math.max(1, Math.round(file.size / 1024)) + ' KB)';
+        }).join(', ')
+      });
       el.body.appendChild(note);
     }
   }
@@ -212,7 +279,7 @@
     el.date.textContent = Template.fullDate(ticket.date);
     el.note.value = ticket.note || '';
     el.reply.value = '';
-    el.body.innerHTML = '<p class="loading">Yuklanmoqda…</p>';
+    el.body.innerHTML = '<p class="loading">' + escapeHtml(t('detail.loading')) + '</p>';
 
     Array.prototype.forEach.call(el.statusRow.querySelectorAll('button[data-set]'), function (button) {
       button.classList.toggle('active', button.dataset.set === ticket.status);
@@ -229,7 +296,7 @@
     if (!button || !ui.selected) return;
     Store.update(ui.selected, { status: button.dataset.set });
     openTicket(ui.selected);
-    toast('Status yangilandi.');
+    toast(t('toast.statusUpdated'));
   });
 
   el.openGmail.addEventListener('click', function () {
@@ -249,7 +316,7 @@
   /* ---------- shablonlar ---------- */
 
   function renderTemplates() {
-    el.templateSelect.innerHTML = '<option value="">Shablon tanlash…</option>' +
+    el.templateSelect.innerHTML = '<option value="">' + escapeHtml(t('composer.pickTemplate')) + '</option>' +
       Store.templates.map(function (template, index) {
         return '<option value="' + index + '">' + escapeHtml(template.title) + '</option>';
       }).join('');
@@ -263,12 +330,12 @@
 
   el.saveTemplate.addEventListener('click', function () {
     var body = el.reply.value.trim();
-    if (!body) return toast('Avval javob matnini yozing.');
-    var title = prompt('Shablon nomi:', body.slice(0, 30));
+    if (!body) return toast(t('toast.writeFirst'));
+    var title = prompt(t('toast.templateName'), body.slice(0, 30));
     if (!title) return;
     Store.addTemplate(title, body);
     renderTemplates();
-    toast('Shablon saqlandi.');
+    toast(t('toast.templateSaved'));
   });
 
   /* ---------- javob yuborish ---------- */
@@ -277,13 +344,13 @@
     if (!ui.selected) return;
     var ticket = Store.get(ui.selected);
     var text = el.reply.value.trim();
-    if (!text) return toast('Javob matni bo\'sh.');
+    if (!text) return toast(t('toast.emptyReply'));
 
     var signature = (Store.settings.signature || '').trim();
     var fullText = signature ? text + '\n\n' + signature : text;
 
     el.send.disabled = true;
-    el.send.textContent = 'Yuborilmoqda…';
+    el.send.textContent = t('composer.sending');
 
     Gmail.sendReply({
       to: ticket.fromEmail,
@@ -297,13 +364,13 @@
       if (el.markRead.checked) return Gmail.markRead(ticket.messageId).catch(function () {});
     }).then(function () {
       el.reply.value = '';
-      toast('Javob yuborildi ✓');
+      toast(t('toast.sent'));
       openTicket(ticket.id);
     }).catch(function (err) {
-      toast('Yuborilmadi: ' + err.message);
+      toast(t('toast.sendFailed', { error: err.message }));
     }).then(function () {
       el.send.disabled = false;
-      el.send.textContent = 'Javobni yuborish';
+      el.send.textContent = t('composer.send');
     });
   });
 
@@ -360,7 +427,7 @@
   /* ---------- yangi xat ---------- */
 
   function openCompose() {
-    if (!Gmail.isSignedIn()) return toast('Avval Gmail hisobiga kiring.');
+    if (!Gmail.isSignedIn()) return toast(t('toast.signInFirst'));
     el.composeTo.value = '';
     el.composeSubject.value = '';
     el.composeBody.value = '';
@@ -378,12 +445,12 @@
     var to = el.composeTo.value.trim();
     var subject = el.composeSubject.value.trim();
     var body = el.composeBody.value.trim();
-    if (!to || to.indexOf('@') === -1) return toast('Manzil noto\'g\'ri.');
-    if (!body) return toast('Xat matni bo\'sh.');
+    if (!to || to.indexOf('@') === -1) return toast(t('toast.badAddress'));
+    if (!body) return toast(t('toast.emptyBody'));
 
     var signature = (Store.settings.signature || '').trim();
     var text = signature ? body + '\n\n' + signature : body;
-    var payload = { to: to, subject: subject || '(mavzusiz)', text: text };
+    var payload = { to: to, subject: subject || '—', text: text };
 
     if (el.composeCard.checked) {
       var card = Template.buildAutoReply(
@@ -393,29 +460,30 @@
           autoReplySteps: ''
         }),
         { threadId: to + subject, from: Gmail.parseAddress(to).name, fromEmail: to,
-          subject: subject || '(mavzusiz)', date: Date.now() }
+          subject: subject || '—', date: Date.now() }
       );
       payload.html = card.html;
       payload.text = card.text;
     }
 
-    toast('Yuborilmoqda…');
+    toast(t('composer.sending'));
     Gmail.sendMail(payload).then(function () {
-      toast('Xat yuborildi ✓');
+      toast(t('toast.mailSent'));
       setTimeout(function () { sync(false); }, 1500);
     }).catch(function (err) {
-      toast('Yuborilmadi: ' + err.message);
+      toast(t('toast.sendFailed', { error: err.message }));
     });
   });
 
   /* ---------- kartochka namunasi ---------- */
 
   el.previewBtn.addEventListener('click', function () {
+    var lang = el.cardLang.value || 'en';
     var card = Template.buildAutoReply(readAutoReplyFields(), {
       threadId: 'namuna',
-      from: 'Aziz Karimov',
-      fromEmail: 'aziz@example.com',
-      subject: 'Buyurtma haqida savol',
+      from: I18n.card(lang, 'sampleName'),
+      fromEmail: 'sample@example.com',
+      subject: I18n.card(lang, 'sampleSubject'),
       date: Date.now()
     });
     el.previewFrame.srcdoc = card.html;
@@ -428,7 +496,7 @@
     if (!Store.settings.notify || !('Notification' in window)) return;
     if (Notification.permission !== 'granted') return;
     new Notification('Auto Mail', {
-      body: count === 1 ? 'Navbatga 1 ta yangi xat tushdi.' : 'Navbatga ' + count + ' ta yangi xat tushdi.',
+      body: count === 1 ? t('notify.one') : t('notify.many', { count: count }),
       icon: './icon.svg'
     });
   }
@@ -436,11 +504,11 @@
   function sync(interactive) {
     if (ui.syncing) return Promise.resolve();
     if (!Gmail.isConfigured()) {
-      setStatus('off', 'Sozlanmagan');
+      setStatus('off', t('status.unconfigured'));
       return Promise.resolve();
     }
     ui.syncing = true;
-    setStatus('sync', 'Tekshirilmoqda…');
+    setStatus('sync', t('status.checking'));
 
     var ready = Gmail.isSignedIn() ? Promise.resolve() : (interactive ? Gmail.signIn() : Gmail.restore());
 
@@ -462,21 +530,21 @@
       .then(function (added) {
         Store.setLastSync(Date.now());
         renderList();
-        setStatus('on', 'Ulangan · ' + formatDate(Date.now()));
+        setStatus('on', t('status.connected') + ' · ' + formatDate(Date.now()));
         if (added > 0) {
           notifyNew(added);
-          toast(added + ' ta yangi xat navbatga olindi.');
+          toast(t('toast.newMails', { count: added }));
         }
         return runAutoReplies();
       })
       .then(function (replied) {
         if (replied) {
           renderList();
-          toast(replied + ' ta xatga avtomatik javob yuborildi.');
+          toast(t('toast.autoReplied', { count: replied }));
         }
       })
       .catch(function (err) {
-        setStatus('err', 'Xato');
+        setStatus('err', t('status.error'));
         if (interactive) toast(err.message);
         else console.warn('Sinxronizatsiya:', err.message);
       })
@@ -499,11 +567,11 @@
   el.statusPill.addEventListener('click', function () {
     if (!Gmail.isConfigured()) return el.dialog.showModal();
     if (Gmail.isSignedIn()) {
-      if (confirm('Gmail hisobidan chiqasizmi?')) {
+      if (confirm(t('confirm.signOut'))) {
         Gmail.signOut();
         ui.myEmail = '';
-        el.account.textContent = 'ulanmagan';
-        setStatus('off', 'Kirish kerak');
+        el.account.textContent = t('top.accountNone');
+        setStatus('off', t('status.needSignIn'));
         updateAuthUi();
       }
       return;
@@ -520,7 +588,7 @@
   function updateAuthUi() {
     var signedIn = Gmail.isSignedIn();
     el.signIn.hidden = signedIn || !Gmail.isConfigured();
-    el.statusPill.title = signedIn ? 'Chiqish uchun bosing' : 'Kirish uchun bosing';
+    el.statusPill.title = t(signedIn ? 'status.signOutHint' : 'status.signInHint');
   }
 
   function signInFlow() {
@@ -531,7 +599,7 @@
     if (!Gmail.isSignedIn()) return Promise.resolve();
     return Gmail.profile().then(function (profile) {
       ui.myEmail = profile.emailAddress || '';
-      el.account.textContent = ui.myEmail || 'ulangan';
+      el.account.textContent = ui.myEmail || t('status.connected');
     }).catch(function () {});
   }
 
@@ -546,6 +614,7 @@
     el.signature.value = settings.signature;
     el.originHint.textContent = location.origin;
 
+    fillLangSelect(el.cardLang, settings.cardLang);
     el.autoReply.checked = !!settings.autoReply;
     el.brandName.value = settings.brandName;
     el.brandColor.value = settings.brandColor;
@@ -555,11 +624,13 @@
     el.autoUrl.value = settings.autoReplyUrl;
     el.autoButton.value = settings.autoReplyButton;
     el.autoContact.value = settings.autoReplyContact;
+    updateCardHints();
   }
 
   /** Namuna uchun: hozir oynada turgan (hali saqlanmagan) qiymatlar. */
   function readAutoReplyFields() {
     return Object.assign({}, Store.settings, {
+      cardLang: el.cardLang.value || 'en',
       brandName: el.brandName.value.trim() || 'Auto Mail',
       brandColor: el.brandColor.value,
       autoReplyTitle: el.autoTitle.value.trim(),
@@ -602,7 +673,7 @@
     if (wantsNotify && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
-    toast('Sozlamalar saqlandi.');
+    toast(t('toast.settingsSaved'));
     signInFlow();
   });
 
@@ -610,19 +681,23 @@
 
   function init() {
     applyTheme(Store.settings.theme);
+    I18n.setLang(Store.settings.lang);
+    fillLangSelect(el.langSelect, I18n.lang);
+    fillLangSelect(el.langSettings, I18n.lang);
+    I18n.translate();
     renderTemplates();
     renderList();
     fillSettings();
+    el.account.textContent = t('top.accountNone');
     Gmail.configure(Store.settings.clientId);
 
     if (!Store.settings.clientId) {
-      setStatus('off', 'Sozlanmagan');
+      setStatus('off', t('status.unconfigured'));
       el.dialog.showModal();
     } else {
-      setStatus('off', 'Ulanmoqda…');
+      setStatus('off', t('status.needSignIn'));
       schedulePolling();
       if (Gmail.wasSignedIn()) sync(false);
-      else setStatus('off', 'Kirish kerak');
     }
     updateAuthUi();
 

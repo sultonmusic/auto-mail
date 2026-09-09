@@ -64,7 +64,28 @@ a { color: var(--accent); }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.top-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.top-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.lang-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  cursor: pointer;
+}
+.lang-picker select {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  width: auto;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
 .icon-btn {
   width: 36px; height: 36px;
   display: grid; place-items: center;
@@ -286,6 +307,17 @@ textarea:focus, select:focus { border-color: var(--accent); }
 .howto ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; }
 .howto code { background: var(--accent-soft); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
 .sheet-foot { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-row .ghost { flex: 1; min-width: 160px; }
+.sheet-body select {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  outline: none;
+}
 .sheet-body h3 { margin: 4px 0 0; font-size: 15px; }
 .sheet-body .sep { border: 0; border-top: 1px solid var(--line); margin: 6px 0 2px; }
 .sheet-body code { background: var(--accent-soft); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
@@ -331,6 +363,13 @@ textarea:focus, select:focus { border-color: var(--accent); }
   body[data-view="list"] .detail-panel { display: none; }
   body[data-view="detail"] .list-panel { display: none; }
   body[data-view="detail"] .back-btn { display: grid; }
-  .account { max-width: 30vw; }
+  /* Tor ekranda sarlavha va tugmalar alohida qatorda turadi. */
+  .topbar { flex-wrap: wrap; row-gap: 8px; }
+  .brand { flex: 1 1 auto; }
+  .account { max-width: 60vw; }
+  .top-actions { width: 100%; margin-left: 0; justify-content: space-between; flex-wrap: nowrap; }
+  .lang-picker { height: 34px; padding: 0 4px 0 8px; }
+  .lang-picker select { font-size: 12px; max-width: 92px; }
+  .status { font-size: 11.5px; padding: 4px 8px; }
   .grid-2 { grid-template-columns: 1fr; }
 }

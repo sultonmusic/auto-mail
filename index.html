@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Auto Mail — Gmail navbat</title>
+<title>Auto Mail</title>
 <meta name="description" content="Gmail'ga kelgan xatlar avtomatik navbatga olinadi, admin panelda ko'riladi va javob beriladi.">
 <meta name="theme-color" content="#0b1020">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -14,45 +14,49 @@
 <body data-view="list">
 
 <header class="topbar">
-  <button class="icon-btn back-btn" id="backBtn" title="Ro'yxatga qaytish" aria-label="Ro'yxatga qaytish">‹</button>
+  <button class="icon-btn back-btn" id="backBtn" data-i18n-title="top.back" aria-label="Back">‹</button>
   <div class="brand">
     <img src="./icon.svg" alt="" width="28" height="28">
     <div>
       <strong>Auto Mail</strong>
-      <span class="account" id="accountLabel">ulanmagan</span>
+      <span class="account" id="accountLabel"></span>
     </div>
   </div>
   <div class="top-actions">
-    <span class="status" id="statusPill" data-state="off">Oflayn</span>
-    <button class="icon-btn" id="composeBtn" title="Yangi xat" aria-label="Yangi xat">✎</button>
-    <button class="icon-btn" id="refreshBtn" title="Yangilash" aria-label="Yangilash">⟳</button>
-    <button class="icon-btn" id="themeBtn" title="Mavzu" aria-label="Mavzu">◐</button>
-    <button class="icon-btn" id="settingsBtn" title="Sozlamalar" aria-label="Sozlamalar">⚙</button>
+    <label class="lang-picker" data-i18n-title="top.lang">
+      <span aria-hidden="true">🌐</span>
+      <select id="langSelect" aria-label="Language"></select>
+    </label>
+    <span class="status" id="statusPill" data-state="off"></span>
+    <button class="icon-btn" id="composeBtn" data-i18n-title="top.newMail" aria-label="New">✎</button>
+    <button class="icon-btn" id="refreshBtn" data-i18n-title="top.refresh" aria-label="Refresh">⟳</button>
+    <button class="icon-btn" id="themeBtn" data-i18n-title="top.theme" aria-label="Theme">◐</button>
+    <button class="icon-btn" id="settingsBtn" data-i18n-title="top.settings" aria-label="Settings">⚙</button>
   </div>
 </header>
 
 <main class="layout">
   <section class="panel list-panel">
     <div class="list-head">
-      <button class="new-chat" id="newChatBtn">✎ Yangi xat yozish</button>
-      <input type="search" id="searchInput" placeholder="Qidirish: ism, mavzu, matn…" autocomplete="off">
+      <button class="new-chat" id="newChatBtn" data-i18n="list.newChat"></button>
+      <input type="search" id="searchInput" data-i18n-ph="list.search" autocomplete="off">
       <nav class="tabs" id="tabs">
-        <button data-status="new" class="active">Navbat <span class="count" data-count="new">0</span></button>
-        <button data-status="progress">Ishlanmoqda <span class="count" data-count="progress">0</span></button>
-        <button data-status="done">Javob berilgan <span class="count" data-count="done">0</span></button>
-        <button data-status="all">Barchasi <span class="count" data-count="all">0</span></button>
+        <button data-status="new" class="active"><span data-i18n="tab.new"></span> <span class="count" data-count="new">0</span></button>
+        <button data-status="progress"><span data-i18n="tab.progress"></span> <span class="count" data-count="progress">0</span></button>
+        <button data-status="done"><span data-i18n="tab.done"></span> <span class="count" data-count="done">0</span></button>
+        <button data-status="all"><span data-i18n="tab.all"></span> <span class="count" data-count="all">0</span></button>
       </nav>
     </div>
     <ul class="ticket-list" id="ticketList"></ul>
-    <p class="empty" id="listEmpty" hidden>Bu bo'limda xat yo'q.</p>
+    <p class="empty" id="listEmpty" data-i18n="list.empty" hidden></p>
   </section>
 
   <section class="panel detail-panel" id="detailPanel">
     <div class="detail-empty" id="detailEmpty">
       <img src="./icon.svg" alt="" width="64" height="64">
-      <h2>Xat tanlang</h2>
-      <p>Chapdagi navbatdan xatni tanlang — bu yerda to'liq matni va javob oynasi ochiladi.</p>
-      <button class="primary" id="signInBtn" hidden>Google bilan kirish</button>
+      <h2 data-i18n="detail.emptyTitle"></h2>
+      <p data-i18n="detail.emptyText"></p>
+      <button class="primary" id="signInBtn" data-i18n="detail.signIn" hidden></button>
     </div>
 
     <article class="detail" id="detail" hidden>
@@ -63,31 +67,29 @@
           <time id="dDate"></time>
         </div>
         <div class="status-row" id="statusRow">
-          <button data-set="new">Navbatda</button>
-          <button data-set="progress">Ishlanmoqda</button>
-          <button data-set="done">Javob berilgan</button>
-          <button class="ghost" id="openGmail">Gmail'da ochish ↗</button>
+          <button data-set="new" data-i18n="detail.setNew"></button>
+          <button data-set="progress" data-i18n="detail.setProgress"></button>
+          <button data-set="done" data-i18n="detail.setDone"></button>
+          <button class="ghost" id="openGmail" data-i18n="detail.openGmail"></button>
         </div>
       </div>
 
-      <div class="body-wrap" id="bodyWrap"><p class="loading">Yuklanmoqda…</p></div>
+      <div class="body-wrap" id="bodyWrap"></div>
 
-      <label class="note-label">Ichki izoh (faqat shu qurilmada saqlanadi)
-        <textarea id="noteInput" rows="2" placeholder="Masalan: mijozga narx ro'yxati yuborilsin"></textarea>
+      <label class="note-label" data-i18n="note.label">
+        <textarea id="noteInput" rows="2" data-i18n-ph="note.ph"></textarea>
       </label>
 
       <div class="composer">
         <div class="composer-head">
-          <strong>Javob yozish</strong>
-          <select id="templateSelect" title="Shablon">
-            <option value="">Shablon tanlash…</option>
-          </select>
-          <button class="ghost small" id="saveTemplate">Shablon sifatida saqlash</button>
+          <strong data-i18n="composer.title"></strong>
+          <select id="templateSelect"></select>
+          <button class="ghost small" id="saveTemplate" data-i18n="composer.saveTemplate"></button>
         </div>
-        <textarea id="replyInput" rows="6" placeholder="Javob matni…"></textarea>
+        <textarea id="replyInput" rows="6" data-i18n-ph="composer.replyPh"></textarea>
         <div class="composer-foot">
-          <label class="chk"><input type="checkbox" id="markReadAfter" checked> Yuborilgach o'qilgan deb belgilansin</label>
-          <button class="primary" id="sendBtn">Javobni yuborish</button>
+          <label class="chk"><input type="checkbox" id="markReadAfter" checked> <span data-i18n="composer.markRead"></span></label>
+          <button class="primary" id="sendBtn" data-i18n="composer.send"></button>
         </div>
       </div>
     </article>
@@ -96,120 +98,133 @@
 
 <dialog id="setupDialog" class="sheet">
   <form method="dialog" class="sheet-body">
-    <h2>Sozlamalar</h2>
-    <p class="hint">Auto Mail to'g'ridan-to'g'ri brauzerdan Gmail API bilan ishlaydi. Serversiz ishlashi uchun o'zingizning Google OAuth <b>Client ID</b> raqamingiz kerak — u maxfiy kalit emas.</p>
+    <h2 data-i18n="settings.title"></h2>
+    <p class="hint" data-i18n="settings.hint"></p>
 
-    <label>Google OAuth Client ID
+    <label data-i18n="settings.lang">
+      <select id="langSelectSettings"></select>
+    </label>
+
+    <label data-i18n="settings.clientId">
       <input type="text" id="clientIdInput" placeholder="1234567890-abc.apps.googleusercontent.com" spellcheck="false">
     </label>
 
-    <label>Gmail qidiruv sharti (qaysi xatlar navbatga olinadi)
+    <label data-i18n="settings.query">
       <input type="text" id="queryInput" placeholder="in:inbox -from:me newer_than:7d" spellcheck="false">
     </label>
 
     <div class="grid-2">
-      <label>Avtomatik tekshiruv (soniya)
+      <label data-i18n="settings.poll">
         <input type="number" id="pollInput" min="15" max="3600" step="5">
       </label>
       <label class="chk-block">
-        <input type="checkbox" id="notifyInput"> Yangi xatda bildirishnoma
+        <input type="checkbox" id="notifyInput"> <span data-i18n="settings.notify"></span>
       </label>
     </div>
 
-    <label>Imzo (qo'lda yozilgan javob oxiriga qo'shiladi)
-      <textarea id="signatureInput" rows="3" placeholder="Hurmat bilan,&#10;Sulton"></textarea>
+    <label data-i18n="settings.signature">
+      <textarea id="signatureInput" rows="3"></textarea>
     </label>
+
+    <details class="howto">
+      <summary data-i18n="settings.howto"></summary>
+      <ol>
+        <li data-i18n="settings.step1"></li>
+        <li data-i18n="settings.step2"></li>
+        <li data-i18n="settings.step3"></li>
+        <li data-i18n="settings.step4"></li>
+        <li><span data-i18n="settings.step5"></span> <code id="originHint"></code></li>
+      </ol>
+    </details>
 
     <hr class="sep">
-    <h3>Avtomatik javob</h3>
+    <h3 data-i18n="settings.autoSection"></h3>
     <label class="chk-block">
-      <input type="checkbox" id="autoReplyInput"> Yangi xatga avtomatik javob yuborilsin
+      <input type="checkbox" id="autoReplyInput"> <span data-i18n="settings.autoEnable"></span>
     </label>
-    <p class="hint">Yoqilgan paytdan <b>keyin</b> kelgan xatlargagina javob boradi va har bir suhbatga faqat bir marta. <code>noreply@</code> kabi manzillar chetlab o'tiladi.</p>
+    <p class="hint" data-i18n="settings.autoHint"></p>
+
+    <label data-i18n="settings.cardLang">
+      <select id="cardLangInput"></select>
+    </label>
 
     <div class="grid-2">
-      <label>Brend nomi
+      <label data-i18n="settings.brandName">
         <input type="text" id="brandNameInput" placeholder="Capline Group">
       </label>
-      <label>Brend rangi
+      <label data-i18n="settings.brandColor">
         <input type="color" id="brandColorInput">
       </label>
     </div>
 
-    <label>Javob sarlavhasi
-      <input type="text" id="autoTitleInput" placeholder="Xabaringiz qabul qilindi">
+    <label data-i18n="settings.cardTitle">
+      <input type="text" id="autoTitleInput">
     </label>
 
-    <label>Javob matni
+    <label data-i18n="settings.cardText">
       <textarea id="autoTextInput" rows="3"></textarea>
     </label>
 
-    <label>Keyingi qadamlar (har biri yangi qatorda)
+    <label data-i18n="settings.cardSteps">
       <textarea id="autoStepsInput" rows="3"></textarea>
     </label>
 
     <div class="grid-2">
-      <label>Tugma havolasi (ixtiyoriy)
-        <input type="text" id="autoUrlInput" placeholder="https://sayt.uz" spellcheck="false">
+      <label data-i18n="settings.cardUrl">
+        <input type="text" id="autoUrlInput" placeholder="https://example.com" spellcheck="false">
       </label>
-      <label>Tugma yozuvi
-        <input type="text" id="autoButtonInput" placeholder="Saytga o'tish">
+      <label data-i18n="settings.cardButton">
+        <input type="text" id="autoButtonInput">
       </label>
     </div>
 
-    <label>Bog'lanish uchun e-pochta (ixtiyoriy)
-      <input type="text" id="autoContactInput" placeholder="info@sayt.uz" spellcheck="false">
+    <label data-i18n="settings.cardContact">
+      <input type="text" id="autoContactInput" placeholder="info@example.com" spellcheck="false">
     </label>
 
-    <p class="hint">Matnlarda ishlatsa bo'ladi: <code>{ism}</code> <code>{mavzu}</code> <code>{ticket}</code> <code>{sana}</code></p>
-    <button type="button" class="ghost" id="previewBtn">Kartochka namunasini ko'rish</button>
+    <p class="hint"><span data-i18n="settings.placeholders"></span>
+      <code>{name}</code> <code>{subject}</code> <code>{ticket}</code> <code>{date}</code></p>
 
-    <details class="howto">
-      <summary>Client ID qanday olinadi? (5 qadam)</summary>
-      <ol>
-        <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com</a> da yangi loyiha oching.</li>
-        <li>«APIs &amp; Services → Library» da <b>Gmail API</b> ni yoqing.</li>
-        <li>«OAuth consent screen» da tashqi (External) turini tanlang va o'z Gmail manzilingizni <b>Test users</b> ga qo'shing.</li>
-        <li>«Credentials → Create credentials → OAuth client ID → Web application» tanlang.</li>
-        <li><b>Authorized JavaScript origins</b> ga shu sayt manzilini qo'shing: <code id="originHint"></code></li>
-      </ol>
-    </details>
+    <div class="btn-row">
+      <button type="button" class="ghost" id="loadDefaultsBtn" data-i18n="settings.loadDefaults"></button>
+      <button type="button" class="ghost" id="previewBtn" data-i18n="settings.preview"></button>
+    </div>
 
     <div class="sheet-foot">
-      <button value="cancel" class="ghost">Bekor qilish</button>
-      <button value="save" class="primary" id="saveSettings">Saqlash</button>
+      <button value="cancel" class="ghost" data-i18n="btn.cancel"></button>
+      <button value="save" class="primary" id="saveSettings" data-i18n="btn.save"></button>
     </div>
   </form>
 </dialog>
 
 <dialog id="composeDialog" class="sheet">
   <form method="dialog" class="sheet-body">
-    <h2>Yangi xat</h2>
-    <label>Kimga
-      <input type="text" id="composeTo" placeholder="mijoz@example.com" spellcheck="false" autocomplete="off">
+    <h2 data-i18n="compose.title"></h2>
+    <label data-i18n="compose.to">
+      <input type="text" id="composeTo" placeholder="name@example.com" spellcheck="false" autocomplete="off">
     </label>
-    <label>Mavzu
-      <input type="text" id="composeSubject" placeholder="Mavzu">
+    <label data-i18n="compose.subject">
+      <input type="text" id="composeSubject">
     </label>
-    <label>Matn
-      <textarea id="composeBody" rows="7" placeholder="Xat matni…"></textarea>
+    <label data-i18n="compose.body">
+      <textarea id="composeBody" rows="7" data-i18n-ph="compose.bodyPh"></textarea>
     </label>
     <label class="chk-block">
-      <input type="checkbox" id="composeCard"> Chiroyli kartochka ko'rinishida yuborilsin
+      <input type="checkbox" id="composeCard"> <span data-i18n="compose.asCard"></span>
     </label>
     <div class="sheet-foot">
-      <button value="cancel" class="ghost">Bekor qilish</button>
-      <button value="send" class="primary" id="composeSend">Yuborish</button>
+      <button value="cancel" class="ghost" data-i18n="btn.cancel"></button>
+      <button value="send" class="primary" id="composeSend" data-i18n="btn.send"></button>
     </div>
   </form>
 </dialog>
 
 <dialog id="previewDialog" class="sheet wide">
   <form method="dialog" class="sheet-body">
-    <h2>Kartochka namunasi</h2>
-    <iframe id="previewFrame" title="Namuna" sandbox=""></iframe>
+    <h2 data-i18n="preview.title"></h2>
+    <iframe id="previewFrame" title="Preview" sandbox=""></iframe>
     <div class="sheet-foot">
-      <button value="close" class="primary">Yopish</button>
+      <button value="close" class="primary" data-i18n="btn.close"></button>
     </div>
   </form>
 </dialog>
@@ -217,6 +232,7 @@
 <div class="toast" id="toast" hidden></div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="./i18n.js"></script>
 <script src="./store.js"></script>
 <script src="./template.js"></script>
 <script src="./gmail.js"></script>

@@ -4,29 +4,12 @@
 (function (global) {
   'use strict';
 
-  var MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
-    'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
-  var MONTHS_SHORT = ['yan', 'fev', 'mar', 'apr', 'may', 'iyun',
-    'iyul', 'avg', 'sen', 'okt', 'noy', 'dek'];
-
   function pad(number) { return (number < 10 ? '0' : '') + number; }
 
-  /** 9-sentabr, 2026 */
-  function longDate(time) {
-    var date = new Date(time);
-    return date.getDate() + '-' + MONTHS[date.getMonth()] + ', ' + date.getFullYear();
-  }
-
-  /** 9-sen */
-  function shortDate(time) {
-    var date = new Date(time);
-    return date.getDate() + '-' + MONTHS_SHORT[date.getMonth()];
-  }
-
-  /** 9-sentabr, 2026 · 15:27 */
+  /** Ro'yxat va sarlavhalar uchun: 9-sentabr, 2026 · 15:27 */
   function fullDate(time) {
     var date = new Date(time);
-    return longDate(time) + ' · ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+    return I18n.longDate(time) + ' · ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
   }
 
   function escapeHtml(text) {
@@ -46,12 +29,19 @@
   }
 
   /** Matndagi o'rin egallovchilarni almashtiradi. */
+  /* O'rin egallovchilar o'zbekcha ham, inglizcha ham yozilishi mumkin. */
+  var SLOTS = {
+    ism: 'name', name: 'name',
+    mavzu: 'subject', subject: 'subject',
+    ticket: 'ticket',
+    sana: 'date', date: 'date'
+  };
+
   function fill(text, data) {
-    return String(text || '')
-      .replace(/\{ism\}/g, data.name)
-      .replace(/\{mavzu\}/g, data.subject)
-      .replace(/\{ticket\}/g, data.ticket)
-      .replace(/\{sana\}/g, data.date);
+    return String(text || '').replace(/\{(\w+)\}/g, function (match, key) {
+      var field = SLOTS[key.toLowerCase()];
+      return field && data[field] !== undefined ? data[field] : match;
+    });
   }
 
   function infoRow(label, value, color) {
@@ -71,24 +61,26 @@
 
   /** Avtomatik javobni tayyorlaydi: {subject, html, text, ticket}. */
   function buildAutoReply(settings, mail) {
+    var lang = settings.cardLang || 'en';
+    var L = function (key, vars) { return I18n.card(lang, key, vars); };
     var ticket = ticketCode(mail.threadId || mail.id);
     var data = {
       name: mail.from || mail.fromEmail || '',
-      subject: mail.subject || '(mavzusiz)',
+      subject: mail.subject || '—',
       ticket: '#' + ticket,
-      date: longDate(mail.date || Date.now())
+      date: I18n.longDate(mail.date || Date.now(), lang)
     };
 
     var brand = settings.brandName || 'Auto Mail';
     var color = settings.brandColor || '#1b2338';
-    var title = fill(settings.autoReplyTitle || 'Xabaringiz qabul qilindi', data);
-    var message = fill(settings.autoReplyText || '', data);
-    var steps = (settings.autoReplySteps || '').split('\n')
+    var title = fill(settings.autoReplyTitle || L('defaultTitle'), data);
+    var message = fill(settings.autoReplyText || L('defaultText'), data);
+    var steps = (settings.autoReplySteps || L('defaultSteps')).split('\n')
       .map(function (line) { return line.trim(); })
       .filter(Boolean)
       .map(function (line) { return fill(line, data); });
     var buttonUrl = (settings.autoReplyUrl || '').trim();
-    var buttonText = settings.autoReplyButton || 'Saytga o\'tish';
+    var buttonText = settings.autoReplyButton || L('defaultButton');
     var contact = (settings.autoReplyContact || '').trim();
 
     var html = '' +
@@ -108,18 +100,19 @@
       '<h1 style="margin:0 0 16px 0;font:700 24px/1.3 Arial,Helvetica,sans-serif;color:#111827;">' +
         escapeHtml(title) + '</h1>' +
       '<p style="margin:0 0 14px 0;font:400 16px/1.6 Arial,Helvetica,sans-serif;color:#374151;">' +
-        'Assalomu alaykum, <b>' + escapeHtml(data.name) + '</b>!</p>' +
+        escapeHtml(L('greeting', { name: data.name }))
+          .replace(escapeHtml(data.name), '<b>' + escapeHtml(data.name) + '</b>') + '</p>' +
       (message ? '<p style="margin:0 0 22px 0;font:400 16px/1.6 Arial,Helvetica,sans-serif;color:#374151;">' +
         escapeHtml(message).replace(/\n/g, '<br>') + '</p>' : '') +
 
       '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">' +
-        infoRow('Murojaat raqami', data.ticket, escapeHtml(color)) +
-        infoRow('Mavzu', data.subject, '#3b63f6') +
-        infoRow('Qabul qilingan sana', data.date, '#22a06b') +
+        infoRow(L('ticket'), data.ticket, escapeHtml(color)) +
+        infoRow(L('subject'), data.subject, '#3b63f6') +
+        infoRow(L('date'), data.date, '#22a06b') +
       '</table>' +
 
       (steps.length ? '<h2 style="margin:16px 0 10px 0;font:700 17px/1.4 Arial,Helvetica,sans-serif;color:#111827;">' +
-        'Keyingi qadamlar</h2><ol style="margin:0 0 20px 0;padding-left:22px;' +
+        escapeHtml(L('steps')) + '</h2><ol style="margin:0 0 20px 0;padding-left:22px;' +
         'font:400 15px/1.7 Arial,Helvetica,sans-serif;color:#374151;">' +
         steps.map(function (line) { return '<li>' + escapeHtml(line) + '</li>'; }).join('') +
         '</ol>' : '') +
@@ -133,9 +126,10 @@
       '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" ' +
         'style="background:#f4f6fb;border-radius:10px;">' +
         '<tr><td style="padding:14px 18px;font:400 14px/1.6 Arial,Helvetica,sans-serif;color:#6b7280;">' +
-          'Bu xabar avtomatik yuborildi. Tez orada javob beramiz' +
-          (contact ? ', shoshilinch bo\'lsa: <a href="mailto:' + escapeHtml(contact) + '" ' +
-            'style="color:#3b63f6;text-decoration:none;">' + escapeHtml(contact) + '</a>' : '') + '.' +
+          escapeHtml(L('autoNote')) +
+          (contact ? escapeHtml(L('autoNoteContact', { contact: contact }))
+            .replace(escapeHtml(contact), '<a href="mailto:' + escapeHtml(contact) + '" ' +
+              'style="color:#3b63f6;text-decoration:none;">' + escapeHtml(contact) + '</a>') : '') + '.' +
         '</td></tr>' +
       '</table>' +
     '</td></tr>' +
@@ -152,22 +146,22 @@
     var text = [
       title,
       '',
-      'Assalomu alaykum, ' + data.name + '!',
+      L('greeting', { name: data.name }),
       message,
       '',
-      'Murojaat raqami: ' + data.ticket,
-      'Mavzu: ' + data.subject,
-      'Qabul qilingan sana: ' + data.date
-    ].concat(steps.length ? ['', 'Keyingi qadamlar:'].concat(steps.map(function (line, i) {
+      L('ticket') + ': ' + data.ticket,
+      L('subject') + ': ' + data.subject,
+      L('date') + ': ' + data.date
+    ].concat(steps.length ? ['', L('steps') + ':'].concat(steps.map(function (line, i) {
       return (i + 1) + '. ' + line;
     })) : []).concat([
       '',
-      'Bu xabar avtomatik yuborildi.' + (contact ? ' Shoshilinch bo\'lsa: ' + contact : ''),
+      L('autoNote') + (contact ? L('autoNoteContact', { contact: contact }) : '') + '.',
       brand
     ]).join('\n');
 
     return {
-      subject: mail.subject || '(mavzusiz)',
+      subject: mail.subject || data.subject,
       html: html,
       text: text,
       ticket: data.ticket
@@ -178,8 +172,6 @@
     buildAutoReply: buildAutoReply,
     ticketCode: ticketCode,
     fill: fill,
-    longDate: longDate,
-    shortDate: shortDate,
     fullDate: fullDate
   };
 })(window);
