@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Auto Mail — Gmail navbat</title>
+<meta name="description" content="Gmail'ga kelgan xatlar avtomatik navbatga olinadi, admin panelda ko'riladi va javob beriladi.">
+<meta name="theme-color" content="#0b1020">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon.svg">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body data-view="list">
+
+<header class="topbar">
+  <button class="icon-btn back-btn" id="backBtn" title="Ro'yxatga qaytish" aria-label="Ro'yxatga qaytish">‹</button>
+  <div class="brand">
+    <img src="./icon.svg" alt="" width="28" height="28">
+    <div>
+      <strong>Auto Mail</strong>
+      <span class="account" id="accountLabel">ulanmagan</span>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span class="status" id="statusPill" data-state="off">Oflayn</span>
+    <button class="icon-btn" id="refreshBtn" title="Yangilash" aria-label="Yangilash">⟳</button>
+    <button class="icon-btn" id="themeBtn" title="Mavzu" aria-label="Mavzu">◐</button>
+    <button class="icon-btn" id="settingsBtn" title="Sozlamalar" aria-label="Sozlamalar">⚙</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="panel list-panel">
+    <div class="list-head">
+      <input type="search" id="searchInput" placeholder="Qidirish: ism, mavzu, matn…" autocomplete="off">
+      <nav class="tabs" id="tabs">
+        <button data-status="new" class="active">Navbat <span class="count" data-count="new">0</span></button>
+        <button data-status="progress">Ishlanmoqda <span class="count" data-count="progress">0</span></button>
+        <button data-status="done">Javob berilgan <span class="count" data-count="done">0</span></button>
+        <button data-status="all">Barchasi <span class="count" data-count="all">0</span></button>
+      </nav>
+    </div>
+    <ul class="ticket-list" id="ticketList"></ul>
+    <p class="empty" id="listEmpty" hidden>Bu bo'limda xat yo'q.</p>
+  </section>
+
+  <section class="panel detail-panel" id="detailPanel">
+    <div class="detail-empty" id="detailEmpty">
+      <img src="./icon.svg" alt="" width="64" height="64">
+      <h2>Xat tanlang</h2>
+      <p>Chapdagi navbatdan xatni tanlang — bu yerda to'liq matni va javob oynasi ochiladi.</p>
+    </div>
+
+    <article class="detail" id="detail" hidden>
+      <div class="detail-head">
+        <h2 id="dSubject"></h2>
+        <div class="meta">
+          <span id="dFrom"></span>
+          <time id="dDate"></time>
+        </div>
+        <div class="status-row" id="statusRow">
+          <button data-set="new">Navbatda</button>
+          <button data-set="progress">Ishlanmoqda</button>
+          <button data-set="done">Javob berilgan</button>
+          <button class="ghost" id="openGmail">Gmail'da ochish ↗</button>
+        </div>
+      </div>
+
+      <div class="body-wrap" id="bodyWrap"><p class="loading">Yuklanmoqda…</p></div>
+
+      <label class="note-label">Ichki izoh (faqat shu qurilmada saqlanadi)
+        <textarea id="noteInput" rows="2" placeholder="Masalan: mijozga narx ro'yxati yuborilsin"></textarea>
+      </label>
+
+      <div class="composer">
+        <div class="composer-head">
+          <strong>Javob yozish</strong>
+          <select id="templateSelect" title="Shablon">
+            <option value="">Shablon tanlash…</option>
+          </select>
+          <button class="ghost small" id="saveTemplate">Shablon sifatida saqlash</button>
+        </div>
+        <textarea id="replyInput" rows="6" placeholder="Javob matni…"></textarea>
+        <div class="composer-foot">
+          <label class="chk"><input type="checkbox" id="markReadAfter" checked> Yuborilgach o'qilgan deb belgilansin</label>
+          <button class="primary" id="sendBtn">Javobni yuborish</button>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<dialog id="setupDialog" class="sheet">
+  <form method="dialog" class="sheet-body">
+    <h2>Sozlamalar</h2>
+    <p class="hint">Auto Mail to'g'ridan-to'g'ri brauzerdan Gmail API bilan ishlaydi. Serversiz ishlashi uchun o'zingizning Google OAuth <b>Client ID</b> raqamingiz kerak — u maxfiy kalit emas.</p>
+
+    <label>Google OAuth Client ID
+      <input type="text" id="clientIdInput" placeholder="1234567890-abc.apps.googleusercontent.com" spellcheck="false">
+    </label>
+
+    <label>Gmail qidiruv sharti (qaysi xatlar navbatga olinadi)
+      <input type="text" id="queryInput" placeholder="in:inbox -from:me newer_than:7d" spellcheck="false">
+    </label>
+
+    <div class="grid-2">
+      <label>Avtomatik tekshiruv (soniya)
+        <input type="number" id="pollInput" min="15" max="3600" step="5">
+      </label>
+      <label class="chk-block">
+        <input type="checkbox" id="notifyInput"> Yangi xatda bildirishnoma
+      </label>
+    </div>
+
+    <label>Imzo (javob oxiriga qo'shiladi)
+      <textarea id="signatureInput" rows="3" placeholder="Hurmat bilan,&#10;Sulton"></textarea>
+    </label>
+
+    <details class="howto">
+      <summary>Client ID qanday olinadi? (5 qadam)</summary>
+      <ol>
+        <li><a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com</a> da yangi loyiha oching.</li>
+        <li>«APIs &amp; Services → Library» da <b>Gmail API</b> ni yoqing.</li>
+        <li>«OAuth consent screen» da tashqi (External) turini tanlang va o'z Gmail manzilingizni <b>Test users</b> ga qo'shing.</li>
+        <li>«Credentials → Create credentials → OAuth client ID → Web application» tanlang.</li>
+        <li><b>Authorized JavaScript origins</b> ga shu sayt manzilini qo'shing: <code id="originHint"></code></li>
+      </ol>
+    </details>
+
+    <div class="sheet-foot">
+      <button value="cancel" class="ghost">Bekor qilish</button>
+      <button value="save" class="primary" id="saveSettings">Saqlash</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="./store.js"></script>
+<script src="./gmail.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
