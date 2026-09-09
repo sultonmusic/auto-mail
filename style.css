@@ -158,6 +158,18 @@ a { color: var(--accent); }
 .box-item .box-count { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .box-item.active .box-count { color: var(--accent); }
 .side-empty { padding: 4px 10px 8px; font-size: 12.5px; color: var(--muted); }
+.add-account {
+  width: calc(100% - 8px);
+  margin: 14px 4px 4px;
+  padding: 9px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+}
+.add-account:hover { border-color: var(--accent); color: var(--accent); }
 
 .menu-btn { display: none; }
 .scrim {
@@ -244,6 +256,18 @@ a { color: var(--accent); }
 .ticket:hover { background: var(--panel-2); }
 .ticket.selected { background: var(--accent-soft); border-left-color: var(--accent); }
 .ticket.unread .t-subject { font-weight: 700; }
+.ticket .flag { flex: none; font-size: 12px; }
+.ticket.high { background: linear-gradient(90deg, color-mix(in srgb, var(--new) 8%, transparent), transparent 55%); }
+.ai-badge {
+  font-size: 12px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--muted);
+}
+.ai-badge[data-priority="high"] { color: var(--new); border-color: color-mix(in srgb, var(--new) 40%, var(--line)); }
+.ai-badge[data-priority="junk"] { color: var(--muted); }
 .ticket.unread .dot { background: var(--accent); }
 .ticket[data-status="new"] { border-left-color: var(--new); }
 .ticket[data-status="progress"] { border-left-color: var(--progress); }

@@ -18,6 +18,14 @@
       .replace(/"/g, '&quot;');
   }
 
+  /** Mavzu oxiriga murojaat raqamini qo'yadi: «Hello [#7501809]».
+      Raqam allaqachon bo'lsa, takrorlanmaydi. */
+  function withCode(subject, code) {
+    var text = String(subject || '').trim();
+    if (!code) return text;
+    return text.indexOf(code) !== -1 ? text : (text + ' [' + code + ']');
+  }
+
   /** Tred identifikatoridan barqaror 7 xonali murojaat raqami. */
   function ticketCode(seed) {
     var hash = 0;
@@ -82,6 +90,7 @@
     var buttonUrl = (settings.autoReplyUrl || '').trim();
     var buttonText = settings.autoReplyButton || L('defaultButton');
     var contact = (settings.autoReplyContact || '').trim();
+    var responseTime = fill(settings.responseTime || L('defaultResponseTime'), data);
 
     var html = '' +
 '<!doctype html><html><body style="margin:0;padding:0;background:#eef1f7;">' +
@@ -109,6 +118,7 @@
         infoRow(L('ticket'), data.ticket, escapeHtml(color)) +
         infoRow(L('subject'), data.subject, '#3b63f6') +
         infoRow(L('date'), data.date, '#22a06b') +
+        infoRow(L('responseTimeLabel'), responseTime, '#f0a020') +
       '</table>' +
 
       (steps.length ? '<h2 style="margin:16px 0 10px 0;font:700 17px/1.4 Arial,Helvetica,sans-serif;color:#111827;">' +
@@ -151,7 +161,8 @@
       '',
       L('ticket') + ': ' + data.ticket,
       L('subject') + ': ' + data.subject,
-      L('date') + ': ' + data.date
+      L('date') + ': ' + data.date,
+      L('responseTimeLabel') + ': ' + responseTime
     ].concat(steps.length ? ['', L('steps') + ':'].concat(steps.map(function (line, i) {
       return (i + 1) + '. ' + line;
     })) : []).concat([
@@ -161,7 +172,7 @@
     ]).join('\n');
 
     return {
-      subject: mail.subject || data.subject,
+      subject: withCode(mail.subject || data.subject, data.ticket),
       html: html,
       text: text,
       ticket: data.ticket
@@ -172,6 +183,7 @@
     buildAutoReply: buildAutoReply,
     ticketCode: ticketCode,
     fill: fill,
+    withCode: withCode,
     fullDate: fullDate
   };
 })(window);

@@ -34,6 +34,12 @@
     scrim: $('scrim'),
     sidePanel: $('sidePanel'),
     boxList: $('boxList'),
+    aiList: $('aiList'),
+    aiBadge: $('aiBadge'),
+    brandLabel: $('brandLabel'),
+    addAccount: $('addAccountBtn'),
+    switchAccount: $('switchAccountBtn'),
+    responseTime: $('responseTimeInput'),
     categoryList: $('categoryList'),
     labelList: $('labelList'),
     boxIcon: $('boxIcon'),
@@ -94,6 +100,13 @@
     { id: 'CATEGORY_PROMOTIONS', icon: '🏷', key: 'box.promo', query: 'category:promotions' },
     { id: 'CATEGORY_UPDATES', icon: '🔔', key: 'box.updates', query: 'category:updates' },
     { id: 'CATEGORY_FORUMS', icon: '💬', key: 'box.forums', query: 'category:forums' }
+  ];
+
+  /* AI tahlili bo'yicha bo'limlar — navbatning ichidan ajratiladi. */
+  var AI_BOXES = [
+    { id: 'ai:high', icon: '🔥', key: 'box.high', priority: 'high' },
+    { id: 'ai:normal', icon: '📄', key: 'box.normal', priority: 'normal' },
+    { id: 'ai:junk', icon: '🧹', key: 'box.junk', priority: 'junk' }
   ];
 
   var COUNT_TTL = 5 * 60 * 1000;
@@ -171,7 +184,9 @@
   }
 
   function boxRow(box) {
-    var count = box.id === 'queue' ? Store.counts().new : (ui.counts[box.id] || 0);
+    var counts = Store.counts();
+    var count = box.id === 'queue' ? counts.new
+      : (box.priority ? counts[box.priority] : (ui.counts[box.id] || 0));
     return '<li><button class="box-item' + (ui.box.id === box.id ? ' active' : '') + '"' +
       ' data-box="' + escapeHtml(box.id) + '">' +
       '<span class="box-icon">' + box.icon + '</span>' +
@@ -182,6 +197,7 @@
 
   function renderMenu() {
     el.boxList.innerHTML = BOXES.map(boxRow).join('');
+    el.aiList.innerHTML = AI_BOXES.map(boxRow).join('');
     el.categoryList.innerHTML = CATEGORIES.map(boxRow).join('');
     el.labelList.innerHTML = ui.labels.length
       ? ui.labels.map(boxRow).join('')
@@ -192,7 +208,27 @@
   }
 
   function allBoxes() {
-    return BOXES.concat(CATEGORIES, ui.labels);
+    return BOXES.concat(AI_BOXES, CATEGORIES, ui.labels);
+  }
+
+  /** Navbat ichida qaysi xatlar shu qutiga tegishli. */
+  function queueItems(box) {
+    var list = Store.list();
+    if (box.priority) {
+      list = list.filter(function (ticket) { return ticket.priority === box.priority; });
+    } else {
+      /* Bosh ro'yxatda bekorchilar ko'rinmaydi, muhimlari esa tepada. */
+      list = list.filter(function (ticket) { return ticket.priority !== 'junk'; })
+        .sort(function (a, b) {
+          var weight = function (ticket) { return ticket.priority === 'high' ? 1 : 0; };
+          return (weight(b) - weight(a)) || (b.date - a.date);
+        });
+    }
+    return list;
+  }
+
+  function isQueueBox(box) {
+    return box.id === 'queue' || !!box.priority;
   }
 
   function findBox(id) {
@@ -263,7 +299,7 @@
     setMenuOpen(false);
     renderMenu();
     renderList();
-    if (box.id !== 'queue') loadBox();
+    if (!isQueueBox(box)) loadBox();
   }
 
   /** Tanlangan qutini Gmail'dan o'qiydi (navbatga tegmaydi). */
@@ -304,6 +340,12 @@
   }
 
   /** Butun sahifani tanlangan tilga o'giradi. */
+  function applyBrand() {
+    var brand = (Store.settings.brandName || 'Auto Mail').trim();
+    el.brandLabel.textContent = brand;
+    document.title = brand;
+  }
+
   function applyLanguage(lang) {
     I18n.setLang(lang);
     I18n.translate();
@@ -313,6 +355,7 @@
     renderList();
     updateAuthUi();
     updateCardHints();
+    applyBrand();
 
     if (Gmail.isSignedIn()) {
       el.account.textContent = ui.myEmail || t('status.connected');
@@ -341,6 +384,7 @@
     el.autoText.placeholder = I18n.card(lang, 'defaultText');
     el.autoSteps.placeholder = I18n.card(lang, 'defaultSteps');
     el.autoButton.placeholder = I18n.card(lang, 'defaultButton');
+    el.responseTime.placeholder = I18n.card(lang, 'defaultResponseTime');
   }
 
   el.cardLang.addEventListener('change', updateCardHints);
@@ -351,6 +395,7 @@
     el.autoText.value = I18n.card(lang, 'defaultText');
     el.autoSteps.value = I18n.card(lang, 'defaultSteps');
     el.autoButton.value = I18n.card(lang, 'defaultButton');
+    el.responseTime.value = I18n.card(lang, 'defaultResponseTime');
     toast(t('toast.defaultsLoaded'));
   });
 
@@ -385,18 +430,20 @@
       var node = el.tabs.querySelector('[data-count="' + key + '"]');
       if (node) node.textContent = counts[key];
     });
-    var pendingCount = counts.new;
-    document.title = (pendingCount ? '(' + pendingCount + ') ' : '') + 'Auto Mail';
+    var brand = (Store.settings.brandName || 'Auto Mail').trim();
+    document.title = (counts.new ? '(' + counts.new + ') ' : '') + brand;
   }
 
   function rowHtml(item) {
     var status = item.status || '';
     var unread = (item.labelIds || []).indexOf('UNREAD') !== -1;
+    var flag = item.priority === 'high' ? '🔥' : (item.priority === 'junk' ? '🧹' : '');
     return '<li><button class="ticket' + (ui.selected === item.id ? ' selected' : '') +
-      (unread ? ' unread' : '') + '"' +
+      (unread ? ' unread' : '') + (item.priority === 'high' ? ' high' : '') + '"' +
       ' data-id="' + escapeHtml(item.id) + '"' + (status ? ' data-status="' + status + '"' : '') + '>' +
       '<span class="t-row">' +
         '<span class="dot"' + (status ? ' data-status="' + status + '"' : '') + '></span>' +
+        (flag ? '<span class="flag">' + flag + '</span>' : '') +
         '<span class="t-from">' + escapeHtml(item.from || item.fromEmail || '—') + '</span>' +
         '<time class="t-date">' + escapeHtml(formatDate(item.date)) + '</time>' +
       '</span>' +
@@ -406,7 +453,7 @@
   }
 
   function visibleItems() {
-    if (ui.box.id === 'queue') return Store.list().filter(matchesFilter);
+    if (isQueueBox(ui.box)) return queueItems(ui.box).filter(matchesFilter);
     return ui.browse.filter(function (mail) {
       if (!ui.search) return true;
       return [mail.from, mail.fromEmail, mail.subject, mail.snippet]
@@ -415,7 +462,7 @@
   }
 
   function renderList() {
-    var isQueue = ui.box.id === 'queue';
+    var isQueue = isQueueBox(ui.box);
     el.tabs.hidden = !isQueue;
 
     if (!isQueue && ui.browsing) {
@@ -500,7 +547,9 @@
         rfcMessageId: ticket.rfcMessageId,
         references: ticket.references,
         status: ticket.status,
-        note: ticket.note
+        note: ticket.note,
+        priority: ticket.priority,
+        reasons: ticket.reasons
       });
     }
 
@@ -542,6 +591,14 @@
     });
     el.note.parentNode.hidden = !data.queue;
     el.queueBtn.hidden = data.queue;
+
+    var verdict = data.priority ? data : Analyzer.classify(data);
+    el.aiBadge.hidden = false;
+    el.aiBadge.dataset.priority = verdict.priority;
+    el.aiBadge.textContent = t('box.' + verdict.priority) +
+      ((verdict.reasons || []).length
+        ? ' · ' + verdict.reasons.map(function (key) { return t(key); }).join(', ')
+        : '');
     renderList();
 
     Gmail.getBody(data.messageId).then(renderBody).catch(function (err) {
@@ -631,9 +688,10 @@
     el.send.disabled = true;
     el.send.textContent = t('composer.sending');
 
+    var code = '#' + Template.ticketCode(ticket.threadId);
     Gmail.sendReply({
       to: ticket.fromEmail,
-      subject: ticket.subject,
+      subject: Template.withCode(ticket.subject, code),
       body: fullText,
       threadId: ticket.threadId,
       rfcMessageId: ticket.rfcMessageId,
@@ -665,6 +723,7 @@
     var settings = Store.settings;
     if (!settings.autoReply) return false;
     if (ticket.autoReplied) return false;
+    if (ticket.priority === 'junk') return false;
     if (ticket.date < (settings.autoReplySince || 0)) return false;
     if (!ticket.fromEmail) return false;
     if (ui.myEmail && ticket.fromEmail.toLowerCase() === ui.myEmail.toLowerCase()) return false;
@@ -866,6 +925,24 @@
 
   el.signIn.addEventListener('click', signInFlow);
 
+  function switchAccount() {
+    setMenuOpen(false);
+    if (el.dialog.open) el.dialog.close();
+    Gmail.switchAccount().then(function () {
+      ui.myEmail = '';
+      ui.labels = [];
+      ui.counts = {};
+      return loadProfile();
+    }).then(function () {
+      return sync(false).then(loadLabels);
+    }).catch(function (err) {
+      toast(err.message);
+    });
+  }
+
+  el.addAccount.addEventListener('click', switchAccount);
+  el.switchAccount.addEventListener('click', switchAccount);
+
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') sync(false);
   });
@@ -909,6 +986,7 @@
     el.autoUrl.value = settings.autoReplyUrl;
     el.autoButton.value = settings.autoReplyButton;
     el.autoContact.value = settings.autoReplyContact;
+    el.responseTime.value = settings.responseTime;
     updateCardHints();
   }
 
@@ -923,7 +1001,8 @@
       autoReplySteps: el.autoSteps.value,
       autoReplyUrl: el.autoUrl.value.trim(),
       autoReplyButton: el.autoButton.value.trim(),
-      autoReplyContact: el.autoContact.value.trim()
+      autoReplyContact: el.autoContact.value.trim(),
+      responseTime: el.responseTime.value.trim()
     });
   }
 
@@ -958,6 +1037,7 @@
     if (wantsNotify && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
+    applyBrand();
     toast(t('toast.settingsSaved'));
     signInFlow();
   });
@@ -974,6 +1054,7 @@
     renderMenu();
     renderList();
     fillSettings();
+    applyBrand();
     setMenuOpen(false);
     el.account.textContent = t('top.accountNone');
     Gmail.configure(Store.settings.clientId);

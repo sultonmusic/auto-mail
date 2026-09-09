@@ -27,14 +27,15 @@
       autoReply: false,
       autoReplySince: 0,        // shu vaqtdan keyingi xatlargagina javob beriladi
       cardLang: 'en',           // mijozga ketadigan kartochka tili
-      brandName: 'Auto Mail',
+      brandName: 'Capline Group',
       brandColor: '#1b2338',
       autoReplyTitle: '',
       autoReplyText: '',
       autoReplySteps: '',
       autoReplyUrl: '',
       autoReplyButton: '',
-      autoReplyContact: ''
+      autoReplyContact: '',
+      responseTime: ''        // bo'sh bo'lsa javob tilidagi standart muddat
     },
     tickets: {},   // threadId -> ticket
     templates: [], // { title, body }
@@ -64,6 +65,16 @@
 
   var state = load();
   if (!state.settings.clientId) state.settings.clientId = DEFAULT_CLIENT_ID;
+
+  /* Ilgari saqlangan xatlar hali baholanmagan bo'lishi mumkin. */
+  Object.keys(state.tickets).forEach(function (id) {
+    var ticket = state.tickets[id];
+    if (!ticket.priority) {
+      var verdict = global.Analyzer.classify(ticket);
+      ticket.priority = verdict.priority;
+      ticket.reasons = verdict.reasons;
+    }
+  });
 
   function persist() {
     try {
@@ -98,6 +109,7 @@
     /** Gmail'dan kelgan xatni navbatga qo'shadi. Mavjud bo'lsa yangilaydi.
         Qaytaradi: yangi qo'shilgan bo'lsa true. */
     upsertFromMail: function (mail) {
+      var verdict = global.Analyzer.classify(mail);
       var existing = state.tickets[mail.threadId];
       if (existing) {
         var changed = false;
@@ -109,6 +121,8 @@
           existing.rfcMessageId = mail.rfcMessageId;
           existing.references = mail.references;
           if (existing.status === 'done') existing.status = 'new';
+          existing.priority = verdict.priority;
+          existing.reasons = verdict.reasons;
           changed = true;
         }
         if (changed) persist();
@@ -129,6 +143,8 @@
         replies: [],
         autoReplied: 0,
         ticketCode: '',
+        priority: verdict.priority,
+        reasons: verdict.reasons,
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
@@ -167,10 +183,11 @@
     },
 
     counts: function () {
-      var result = { new: 0, progress: 0, done: 0, all: 0 };
+      var result = { new: 0, progress: 0, done: 0, all: 0, high: 0, normal: 0, junk: 0 };
       this.list().forEach(function (ticket) {
         result.all++;
         if (result[ticket.status] !== undefined) result[ticket.status]++;
+        if (result[ticket.priority] !== undefined) result[ticket.priority]++;
       });
       return result;
     },

@@ -21,6 +21,7 @@
   var accessToken = '';
   var tokenExpiresAt = 0;
   var pending = null;
+  var forcePrompt = '';
 
   function saveToken(token, expiresAt) {
     accessToken = token;
@@ -91,7 +92,9 @@
             ? 'Kirish oynasi yopildi.'
             : (err && err.message) || 'Avtorizatsiya bekor qilindi.'));
         };
-        tokenClient.requestAccessToken({ prompt: interactive ? '' : 'none' });
+        tokenClient.requestAccessToken({
+          prompt: forcePrompt || (interactive ? '' : 'none')
+        });
       });
     });
 
@@ -215,6 +218,19 @@
     },
 
     signIn: function () { return ensureToken(true); },
+
+    /** Boshqa Google hisobini tanlash oynasini ochadi. */
+    switchAccount: function () {
+      clearToken(false);
+      forcePrompt = 'select_account';
+      return ensureToken(true).then(function (token) {
+        forcePrompt = '';
+        return token;
+      }, function (err) {
+        forcePrompt = '';
+        throw err;
+      });
+    },
 
     signOut: function () {
       var token = accessToken;

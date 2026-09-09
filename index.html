@@ -19,7 +19,7 @@
   <div class="brand">
     <img src="./icon.svg" alt="" width="28" height="28">
     <div>
-      <strong>Auto Mail</strong>
+      <strong id="brandLabel">Capline Group</strong>
       <span class="account" id="accountLabel"></span>
     </div>
   </div>
@@ -45,8 +45,11 @@
       <ul class="box-list" id="boxList"></ul>
       <h3 class="side-title" data-i18n="menu.categories"></h3>
       <ul class="box-list" id="categoryList"></ul>
+      <h3 class="side-title" data-i18n="menu.ai"></h3>
+      <ul class="box-list" id="aiList"></ul>
       <h3 class="side-title" data-i18n="menu.labels"></h3>
       <ul class="box-list" id="labelList"></ul>
+      <button class="add-account" id="addAccountBtn" data-i18n="menu.addAccount"></button>
     </div>
   </nav>
 
@@ -80,6 +83,7 @@
         <div class="meta">
           <span id="dFrom"></span>
           <time id="dDate"></time>
+          <span class="ai-badge" id="aiBadge" hidden></span>
         </div>
         <div class="status-row" id="statusRow">
           <button data-set="new" data-i18n="detail.setNew"></button>
@@ -120,6 +124,8 @@
     <label data-i18n="settings.lang">
       <select id="langSelectSettings"></select>
     </label>
+
+    <button type="button" class="ghost" id="switchAccountBtn" data-i18n="settings.switchAccount"></button>
 
     <label data-i18n="settings.clientId">
       <input type="text" id="clientIdInput" placeholder="1234567890-abc.apps.googleusercontent.com" spellcheck="false">
@@ -198,6 +204,10 @@
       <input type="text" id="autoContactInput" placeholder="info@example.com" spellcheck="false">
     </label>
 
+    <label data-i18n="settings.responseTime">
+      <input type="text" id="responseTimeInput" spellcheck="false">
+    </label>
+
     <p class="hint"><span data-i18n="settings.placeholders"></span>
       <code>{name}</code> <code>{subject}</code> <code>{ticket}</code> <code>{date}</code></p>
 
@@ -249,6 +259,7 @@
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="./i18n.js"></script>
+<script src="./analyzer.js"></script>
 <script src="./store.js"></script>
 <script src="./template.js"></script>
 <script src="./gmail.js"></script>
