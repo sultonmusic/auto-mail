@@ -17,6 +17,7 @@ Serversiz ishlaydi: butun mantiq brauzerda, GitHub Pages'da bepul turadi. PWA �
 - **Shablonlar.** Tez-tez ishlatiladigan javoblarni saqlab qo'yish va bir bosishda qo'yish.
 - **Imzo.** Har bir javob oxiriga avtomatik qo'shiladi.
 - **Ichki izoh.** Har bir xatga o'zingiz uchun eslatma.
+- **Chap menyu — Gmail'dagidek.** Kiruvchi, Belgilangan, Muhim, Yuborilgan, Qoralamalar, Spam, Savat, Barcha xatlar; toifalar (Ijtimoiy tarmoqlar, Reklama, Yangilanishlar, Forumlar) va sizning yorliqlaringiz (Instagram, T-Bank, Uber…) — o'qilmaganlar soni bilan. Har qanday qutidagi xatni bir bosishda **navbatga qo'shish** mumkin.
 - **Qidiruv va filtr**, qorong'i/yorug' mavzu, mobil ko'rinish, oflayn qobiq.
 
 ## Ishga tushirish

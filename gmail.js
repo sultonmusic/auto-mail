@@ -241,6 +241,27 @@
       });
     },
 
+    /** Gmail yorliqlari: tizim qutilari va foydalanuvchi yorliqlari. */
+    listLabels: function () {
+      return request('/labels').then(function (data) {
+        return (data.labels || []).map(function (label) {
+          return { id: label.id, name: label.name, type: label.type };
+        });
+      });
+    },
+
+    /** Bitta yorliq bo'yicha sanoq (o'qilmagan / jami). */
+    labelInfo: function (id) {
+      return request('/labels/' + encodeURIComponent(id)).then(function (label) {
+        return {
+          id: label.id,
+          name: label.name,
+          unread: label.messagesUnread || 0,
+          total: label.messagesTotal || 0
+        };
+      });
+    },
+
     /** Sarlavhalar (ro'yxat uchun yetarli). */
     getHeaders: function (id) {
       var params = new URLSearchParams();

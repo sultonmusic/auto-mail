@@ -115,12 +115,67 @@ a { color: var(--accent); }
 .layout {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(300px, 380px) 1fr;
+  grid-template-columns: 210px minmax(280px, 360px) 1fr;
   gap: 14px;
   padding: 14px;
   align-items: start;
   min-height: 0;
 }
+@media (max-width: 1180px) {
+  .layout { grid-template-columns: 190px minmax(260px, 320px) 1fr; }
+}
+
+/* ---------- yon menyu ---------- */
+.side-panel { position: sticky; top: 78px; max-height: calc(100dvh - 92px); }
+.side-scroll { overflow-y: auto; max-height: calc(100dvh - 92px); padding: 10px 8px 14px; }
+.side-title {
+  margin: 12px 8px 6px;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+.side-scroll .side-title:first-child { margin-top: 2px; }
+.box-list { list-style: none; margin: 0; padding: 0; }
+.box-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13.5px;
+}
+.box-item:hover { background: var(--panel-2); }
+.box-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.box-item .box-icon { flex: none; width: 18px; text-align: center; }
+.box-item .box-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.box-item .box-count { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.box-item.active .box-count { color: var(--accent); }
+.side-empty { padding: 4px 10px 8px; font-size: 12.5px; color: var(--muted); }
+
+.menu-btn { display: none; }
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 10, 24, .5);
+  z-index: 25;
+}
+
+/* ---------- ro'yxat sarlavhasi ---------- */
+.box-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+.box-header strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -188,6 +243,8 @@ a { color: var(--accent); }
 }
 .ticket:hover { background: var(--panel-2); }
 .ticket.selected { background: var(--accent-soft); border-left-color: var(--accent); }
+.ticket.unread .t-subject { font-weight: 700; }
+.ticket.unread .dot { background: var(--accent); }
 .ticket[data-status="new"] { border-left-color: var(--new); }
 .ticket[data-status="progress"] { border-left-color: var(--progress); }
 .ticket[data-status="done"] { border-left-color: var(--done); }
@@ -197,7 +254,7 @@ a { color: var(--accent); }
 .t-date { margin-left: auto; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
 .t-subject { font-size: 14px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .t-snippet { font-size: 12.5px; color: var(--muted); margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; background: var(--line); }
 .dot[data-status="new"] { background: var(--new); }
 .dot[data-status="progress"] { background: var(--progress); }
 .dot[data-status="done"] { background: var(--done); }
@@ -357,6 +414,26 @@ textarea:focus, select:focus { border-color: var(--accent); }
 }
 
 /* ---------- mobile ---------- */
+@media (max-width: 1020px) {
+  /* Yon menyu chetdan chiqadigan panelga aylanadi. */
+  .layout { grid-template-columns: minmax(280px, 360px) 1fr; }
+  .menu-btn { display: grid; }
+  .side-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 268px;
+    max-height: none;
+    z-index: 30;
+    border-radius: 0 14px 14px 0;
+    transform: translateX(-102%);
+    transition: transform .22s ease;
+  }
+  body[data-menu="open"] .side-panel { transform: none; }
+  .side-scroll { max-height: 100dvh; padding-top: max(14px, env(safe-area-inset-top)); }
+}
+
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; padding: 10px; gap: 10px; }
   .list-panel { position: static; max-height: none; }

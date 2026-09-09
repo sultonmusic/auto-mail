@@ -14,6 +14,7 @@
 <body data-view="list">
 
 <header class="topbar">
+  <button class="icon-btn menu-btn" id="menuBtn" data-i18n-title="menu.open" aria-label="Menu">☰</button>
   <button class="icon-btn back-btn" id="backBtn" data-i18n-title="top.back" aria-label="Back">‹</button>
   <div class="brand">
     <img src="./icon.svg" alt="" width="28" height="28">
@@ -35,10 +36,24 @@
   </div>
 </header>
 
+<div class="scrim" id="scrim" hidden></div>
+
 <main class="layout">
+  <nav class="panel side-panel" id="sidePanel" aria-label="Mailboxes">
+    <div class="side-scroll">
+      <h3 class="side-title" data-i18n="menu.mailboxes"></h3>
+      <ul class="box-list" id="boxList"></ul>
+      <h3 class="side-title" data-i18n="menu.categories"></h3>
+      <ul class="box-list" id="categoryList"></ul>
+      <h3 class="side-title" data-i18n="menu.labels"></h3>
+      <ul class="box-list" id="labelList"></ul>
+    </div>
+  </nav>
+
   <section class="panel list-panel">
     <div class="list-head">
       <button class="new-chat" id="newChatBtn" data-i18n="list.newChat"></button>
+      <div class="box-header"><span class="box-icon" id="boxIcon"></span><strong id="boxTitle"></strong></div>
       <input type="search" id="searchInput" data-i18n-ph="list.search" autocomplete="off">
       <nav class="tabs" id="tabs">
         <button data-status="new" class="active"><span data-i18n="tab.new"></span> <span class="count" data-count="new">0</span></button>
@@ -70,6 +85,7 @@
           <button data-set="new" data-i18n="detail.setNew"></button>
           <button data-set="progress" data-i18n="detail.setProgress"></button>
           <button data-set="done" data-i18n="detail.setDone"></button>
+          <button class="ghost" id="queueBtn" data-i18n="browse.addToQueue" hidden></button>
           <button class="ghost" id="openGmail" data-i18n="detail.openGmail"></button>
         </div>
       </div>

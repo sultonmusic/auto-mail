@@ -28,6 +28,30 @@
         'status.error': 'Xato',
         'status.signInHint': 'Kirish uchun bosing',
         'status.signOutHint': 'Chiqish uchun bosing',
+        'menu.open': 'Menyu',
+        'menu.mailboxes': 'Pochta',
+        'menu.categories': 'Toifalar',
+        'menu.labels': 'Yorliqlar',
+        'menu.noLabels': 'Yorliq yo\'q',
+        'menu.loading': 'Yuklanmoqda…',
+        'box.queue': 'Navbat',
+        'box.inbox': 'Kiruvchi',
+        'box.starred': 'Belgilangan',
+        'box.important': 'Muhim',
+        'box.sent': 'Yuborilgan',
+        'box.drafts': 'Qoralamalar',
+        'box.spam': 'Spam',
+        'box.trash': 'Savat',
+        'box.allmail': 'Barcha xatlar',
+        'box.primary': 'Asosiy',
+        'box.social': 'Ijtimoiy tarmoqlar',
+        'box.promo': 'Reklama',
+        'box.updates': 'Yangilanishlar',
+        'box.forums': 'Forumlar',
+        'browse.empty': 'Bu qutida xat yo\'q.',
+        'browse.addToQueue': 'Navbatga qo\'shish',
+        'toast.addedToQueue': 'Navbatga qo\'shildi.',
+        'toast.alreadyQueued': 'Bu xat allaqachon navbatda.',
         'list.newChat': '✎ Yangi xat yozish',
         'list.search': 'Qidirish: ism, mavzu, matn…',
         'tab.new': 'Navbat',
@@ -157,6 +181,30 @@
         'status.error': 'Error',
         'status.signInHint': 'Click to sign in',
         'status.signOutHint': 'Click to sign out',
+        'menu.open': 'Menu',
+        'menu.mailboxes': 'Mail',
+        'menu.categories': 'Categories',
+        'menu.labels': 'Labels',
+        'menu.noLabels': 'No labels',
+        'menu.loading': 'Loading…',
+        'box.queue': 'Queue',
+        'box.inbox': 'Inbox',
+        'box.starred': 'Starred',
+        'box.important': 'Important',
+        'box.sent': 'Sent',
+        'box.drafts': 'Drafts',
+        'box.spam': 'Spam',
+        'box.trash': 'Trash',
+        'box.allmail': 'All mail',
+        'box.primary': 'Primary',
+        'box.social': 'Social',
+        'box.promo': 'Promotions',
+        'box.updates': 'Updates',
+        'box.forums': 'Forums',
+        'browse.empty': 'No messages in this mailbox.',
+        'browse.addToQueue': 'Add to queue',
+        'toast.addedToQueue': 'Added to the queue.',
+        'toast.alreadyQueued': 'This message is already in the queue.',
         'list.newChat': '✎ Write a new message',
         'list.search': 'Search: name, subject, text…',
         'tab.new': 'Queue',
@@ -286,6 +334,30 @@
         'status.error': 'Ошибка',
         'status.signInHint': 'Нажмите, чтобы войти',
         'status.signOutHint': 'Нажмите, чтобы выйти',
+        'menu.open': 'Меню',
+        'menu.mailboxes': 'Почта',
+        'menu.categories': 'Категории',
+        'menu.labels': 'Ярлыки',
+        'menu.noLabels': 'Ярлыков нет',
+        'menu.loading': 'Загрузка…',
+        'box.queue': 'Очередь',
+        'box.inbox': 'Входящие',
+        'box.starred': 'Помеченные',
+        'box.important': 'Важные',
+        'box.sent': 'Отправленные',
+        'box.drafts': 'Черновики',
+        'box.spam': 'Спам',
+        'box.trash': 'Корзина',
+        'box.allmail': 'Вся почта',
+        'box.primary': 'Несортированные',
+        'box.social': 'Соцсети',
+        'box.promo': 'Промоакции',
+        'box.updates': 'Оповещения',
+        'box.forums': 'Форумы',
+        'browse.empty': 'В этом ящике нет писем.',
+        'browse.addToQueue': 'Добавить в очередь',
+        'toast.addedToQueue': 'Добавлено в очередь.',
+        'toast.alreadyQueued': 'Это письмо уже в очереди.',
         'list.newChat': '✎ Написать письмо',
         'list.search': 'Поиск: имя, тема, текст…',
         'tab.new': 'Очередь',
@@ -439,10 +511,26 @@
     return apply(pack(lang || current).shortDate, dateParts(time, lang || current));
   }
 
+  /** Matnni almashtiradi, lekin ichidagi elementlarni saqlab qoladi:
+      <label data-i18n="…"><input></label> dagi input yo'qolmasligi kerak. */
+  function setText(node, text) {
+    if (!node.children.length) {
+      node.textContent = text;
+      return;
+    }
+    for (var i = 0; i < node.childNodes.length; i++) {
+      if (node.childNodes[i].nodeType === 3) {
+        node.childNodes[i].nodeValue = text;
+        return;
+      }
+    }
+    node.insertBefore(document.createTextNode(text), node.firstChild);
+  }
+
   /** Sahifadagi barcha belgilangan matnlarni almashtiradi. */
   function translate(root) {
     (root || document).querySelectorAll('[data-i18n]').forEach(function (node) {
-      node.textContent = t(node.getAttribute('data-i18n'));
+      setText(node, t(node.getAttribute('data-i18n')));
     });
     (root || document).querySelectorAll('[data-i18n-ph]').forEach(function (node) {
       node.placeholder = t(node.getAttribute('data-i18n-ph'));
