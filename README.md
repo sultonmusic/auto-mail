@@ -7,6 +7,9 @@ Serversiz ishlaydi: butun mantiq brauzerda, GitHub Pages'da bepul turadi. PWA �
 ## Nima qiladi
 
 - **Avtomatik navbat.** Belgilangan oraliqda (standart 60 soniya) Gmail tekshiriladi, yangi xat topilsa navbatga qo'shiladi va bildirishnoma chiqadi.
+- **Avtomatik javob.** Yangi xat kelishi bilan chiroyli HTML kartochka javob bo'lib ketadi: brend paneli, murojaat raqami, mavzu, sana, keyingi qadamlar va tugma.
+- **Yangi xat.** Panelning o'zidan yangi manzilga xat yozish (xohlasangiz o'sha kartochka ko'rinishida).
+- **Doimiy kirish.** Bir marta ulangach, chiqmaguningizcha kirgan holicha qolasiz — brauzer yopilib ochilsa ham.
 - **Admin panel.** Chapda navbat ro'yxati (kim, mavzu, qisqacha matn, vaqt), o'ngda to'liq xat.
 - **Statuslar.** Navbatda → Ishlanmoqda → Javob berilgan. Har bir bo'limda nechta xat borligi ko'rinib turadi.
 - **Javob yozish.** To'g'ridan-to'g'ri panelda javob yoziladi va Gmail orqali **o'sha tred ichida** yuboriladi (`In-Reply-To` sarlavhasi bilan).
@@ -59,7 +62,26 @@ python3 -m http.server 8080
 | **Gmail qidiruv sharti** | Qaysi xatlar navbatga olinishi. Standart: `in:inbox -from:me newer_than:7d`. Masalan faqat o'qilmaganlar: `is:unread in:inbox` |
 | **Avtomatik tekshiruv** | Necha soniyada bir Gmail tekshirilsin (15–3600) |
 | **Bildirishnoma** | Yangi xat kelganda brauzer bildirishnomasi |
-| **Imzo** | Javob oxiriga qo'shiladigan matn |
+| **Imzo** | Qo'lda yozilgan javob oxiriga qo'shiladigan matn |
+| **Avtomatik javob** | Yangi xatga kartochkali javob avtomatik ketsin |
+| **Brend nomi / rangi** | Kartochka yuqorisidagi panel |
+| **Javob sarlavhasi / matni** | Kartochka mazmuni |
+| **Keyingi qadamlar** | Raqamlangan ro'yxat — har bir qator alohida band |
+| **Tugma havolasi / yozuvi** | Kartochkadagi chaqiruv tugmasi (ixtiyoriy) |
+| **Bog'lanish e-pochtasi** | Kartochka pastidagi manzil (ixtiyoriy) |
+
+Matnlarda o'rin egallovchilar ishlaydi: `{ism}`, `{mavzu}`, `{ticket}`, `{sana}`.
+
+### Avtomatik javob qanday himoyalangan
+
+Xatolik bilan yuzlab xat ketib qolmasligi uchun bir nechta cheklov qo'yilgan:
+
+- Javob **faqat sozlama yoqilgandan keyin** kelgan xatlarga boradi — eski navbatga tegmaydi.
+- Har bir suhbatga **bir marta** (`autoReplied` belgisi bilan).
+- `noreply@`, `no-reply@`, `mailer-daemon`, `notifications@` kabi robot manzillar chetlab o'tiladi.
+- O'z manzilingizga javob yozilmaydi.
+- Bitta tekshiruvda ko'pi bilan **5 ta** javob yuboriladi.
+- Javob ketgan xat avtomatik **«Ishlanmoqda»** holatiga o'tadi — odam baribir ko'rib chiqadi.
 
 ## Fayllar
 
@@ -68,6 +90,7 @@ python3 -m http.server 8080
 | `index.html` | Panel tuzilishi |
 | `style.css` | Dizayn, mavzular, mobil ko'rinish |
 | `store.js` | Navbat, statuslar, izoh va shablonlarni `localStorage` da saqlash |
+| `template.js` | Avtomatik javob kartochkasi (email uchun jadvalli HTML) va sana formatlari |
 | `gmail.js` | Google avtorizatsiyasi va Gmail API (o'qish, javob yuborish, belgilash) |
 | `app.js` | Panel mantiqi: filtr, qidiruv, sinxronizatsiya, javob yuborish |
 | `service-worker.js` | Oflayn qobiq (Gmail so'rovlari keshlanmaydi) |
@@ -75,7 +98,7 @@ python3 -m http.server 8080
 ## Maxfiylik va xavfsizlik
 
 - Xat matnlari **Gmail'da qoladi** — bu ilova faqat ish jarayonini (status, izoh, shablon) o'z qurilmangizdagi `localStorage` da saqlaydi.
-- Access token faqat sahifa ochiq turganda xotirada bo'ladi, hech qayerga yuborilmaydi.
+- Kirish tokeni brauzeringizning `localStorage` ida saqlanadi (shuning uchun qayta kirish so'ralmaydi) va hech qayerga yuborilmaydi. **Chiqish** bosilganda o'chiriladi va Google'da bekor qilinadi. Umumiy kompyuterda ishlatmang.
 - HTML ko'rinishidagi xatlar `sandbox` qilingan `iframe` ichida ochiladi — ulardagi skriptlar ishlamaydi.
 - Ruxsatlar: `gmail.modify` (o'qish va belgilash), `gmail.send` (javob yuborish).
 
@@ -83,4 +106,5 @@ python3 -m http.server 8080
 
 - Panel ochiq turganda ishlaydi — yopiq brauzerda fon rejimida tekshirmaydi (buning uchun server yoki Google Apps Script kerak bo'ladi).
 - Ilovalarni (attachment) ko'rsatadi, lekin yuklab olish Gmail orqali.
+- Avtomatik javob ham panel ochiq turganda ishlaydi — telefon qulflangan bo'lsa, ilova ochilgach yuboriladi.
 - Google OAuth consent screen `Testing` holatida bo'lsa, token 7 kunda bir yangilanadi — `Publish app` qilinsa bu cheklov yo'qoladi.

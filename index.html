@@ -24,6 +24,7 @@
   </div>
   <div class="top-actions">
     <span class="status" id="statusPill" data-state="off">Oflayn</span>
+    <button class="icon-btn" id="composeBtn" title="Yangi xat" aria-label="Yangi xat">✎</button>
     <button class="icon-btn" id="refreshBtn" title="Yangilash" aria-label="Yangilash">⟳</button>
     <button class="icon-btn" id="themeBtn" title="Mavzu" aria-label="Mavzu">◐</button>
     <button class="icon-btn" id="settingsBtn" title="Sozlamalar" aria-label="Sozlamalar">⚙</button>
@@ -33,6 +34,7 @@
 <main class="layout">
   <section class="panel list-panel">
     <div class="list-head">
+      <button class="new-chat" id="newChatBtn">✎ Yangi xat yozish</button>
       <input type="search" id="searchInput" placeholder="Qidirish: ism, mavzu, matn…" autocomplete="off">
       <nav class="tabs" id="tabs">
         <button data-status="new" class="active">Navbat <span class="count" data-count="new">0</span></button>
@@ -114,9 +116,53 @@
       </label>
     </div>
 
-    <label>Imzo (javob oxiriga qo'shiladi)
+    <label>Imzo (qo'lda yozilgan javob oxiriga qo'shiladi)
       <textarea id="signatureInput" rows="3" placeholder="Hurmat bilan,&#10;Sulton"></textarea>
     </label>
+
+    <hr class="sep">
+    <h3>Avtomatik javob</h3>
+    <label class="chk-block">
+      <input type="checkbox" id="autoReplyInput"> Yangi xatga avtomatik javob yuborilsin
+    </label>
+    <p class="hint">Yoqilgan paytdan <b>keyin</b> kelgan xatlargagina javob boradi va har bir suhbatga faqat bir marta. <code>noreply@</code> kabi manzillar chetlab o'tiladi.</p>
+
+    <div class="grid-2">
+      <label>Brend nomi
+        <input type="text" id="brandNameInput" placeholder="Capline Group">
+      </label>
+      <label>Brend rangi
+        <input type="color" id="brandColorInput">
+      </label>
+    </div>
+
+    <label>Javob sarlavhasi
+      <input type="text" id="autoTitleInput" placeholder="Xabaringiz qabul qilindi">
+    </label>
+
+    <label>Javob matni
+      <textarea id="autoTextInput" rows="3"></textarea>
+    </label>
+
+    <label>Keyingi qadamlar (har biri yangi qatorda)
+      <textarea id="autoStepsInput" rows="3"></textarea>
+    </label>
+
+    <div class="grid-2">
+      <label>Tugma havolasi (ixtiyoriy)
+        <input type="text" id="autoUrlInput" placeholder="https://sayt.uz" spellcheck="false">
+      </label>
+      <label>Tugma yozuvi
+        <input type="text" id="autoButtonInput" placeholder="Saytga o'tish">
+      </label>
+    </div>
+
+    <label>Bog'lanish uchun e-pochta (ixtiyoriy)
+      <input type="text" id="autoContactInput" placeholder="info@sayt.uz" spellcheck="false">
+    </label>
+
+    <p class="hint">Matnlarda ishlatsa bo'ladi: <code>{ism}</code> <code>{mavzu}</code> <code>{ticket}</code> <code>{sana}</code></p>
+    <button type="button" class="ghost" id="previewBtn">Kartochka namunasini ko'rish</button>
 
     <details class="howto">
       <summary>Client ID qanday olinadi? (5 qadam)</summary>
@@ -136,10 +182,43 @@
   </form>
 </dialog>
 
+<dialog id="composeDialog" class="sheet">
+  <form method="dialog" class="sheet-body">
+    <h2>Yangi xat</h2>
+    <label>Kimga
+      <input type="text" id="composeTo" placeholder="mijoz@example.com" spellcheck="false" autocomplete="off">
+    </label>
+    <label>Mavzu
+      <input type="text" id="composeSubject" placeholder="Mavzu">
+    </label>
+    <label>Matn
+      <textarea id="composeBody" rows="7" placeholder="Xat matni…"></textarea>
+    </label>
+    <label class="chk-block">
+      <input type="checkbox" id="composeCard"> Chiroyli kartochka ko'rinishida yuborilsin
+    </label>
+    <div class="sheet-foot">
+      <button value="cancel" class="ghost">Bekor qilish</button>
+      <button value="send" class="primary" id="composeSend">Yuborish</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="previewDialog" class="sheet wide">
+  <form method="dialog" class="sheet-body">
+    <h2>Kartochka namunasi</h2>
+    <iframe id="previewFrame" title="Namuna" sandbox=""></iframe>
+    <div class="sheet-foot">
+      <button value="close" class="primary">Yopish</button>
+    </div>
+  </form>
+</dialog>
+
 <div class="toast" id="toast" hidden></div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="./store.js"></script>
+<script src="./template.js"></script>
 <script src="./gmail.js"></script>
 <script src="./app.js"></script>
 </body>

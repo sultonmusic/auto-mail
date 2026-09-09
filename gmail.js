@@ -13,11 +13,43 @@
 
   var API = 'https://gmail.googleapis.com/gmail/v1/users/me';
 
+  var TOKEN_KEY = 'automail.token';
+  var SESSION_KEY = 'automail.signedIn';
+
   var tokenClient = null;
   var clientId = '';
   var accessToken = '';
   var tokenExpiresAt = 0;
   var pending = null;
+
+  function saveToken(token, expiresAt) {
+    accessToken = token;
+    tokenExpiresAt = expiresAt;
+    try {
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({ token: token, expiresAt: expiresAt }));
+      localStorage.setItem(SESSION_KEY, '1');
+    } catch (err) { /* xotira to'lgan bo'lsa ham ishlashda davom etamiz */ }
+  }
+
+  function clearToken(forget) {
+    accessToken = '';
+    tokenExpiresAt = 0;
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+      if (forget) localStorage.removeItem(SESSION_KEY);
+    } catch (err) { /* ignore */ }
+  }
+
+  /* Sahifa qayta ochilganda saqlangan tokenni tiklaymiz. */
+  (function restoreSavedToken() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(TOKEN_KEY) || 'null');
+      if (saved && saved.token && saved.expiresAt > Date.now() + 60000) {
+        accessToken = saved.token;
+        tokenExpiresAt = saved.expiresAt;
+      }
+    } catch (err) { /* ignore */ }
+  })();
 
   function gisReady() {
     return new Promise(function (resolve, reject) {
@@ -51,9 +83,7 @@
             reject(new Error(response.error_description || response.error));
             return;
           }
-          accessToken = response.access_token;
-          tokenExpiresAt = Date.now() + (Number(response.expires_in || 3600) * 1000);
-          try { sessionStorage.setItem('automail.signedIn', '1'); } catch (err) { /* ignore */ }
+          saveToken(response.access_token, Date.now() + (Number(response.expires_in || 3600) * 1000));
           resolve(accessToken);
         };
         tokenClient.error_callback = function (err) {
@@ -86,9 +116,14 @@
       });
     }).then(function (response) {
       if (response.status === 401) {
-        accessToken = '';
-        tokenExpiresAt = 0;
-        throw new Error('Sessiya tugadi — qaytadan kiring.');
+        clearToken(false);
+        if (options._retried) throw new Error('Sessiya tugadi — qaytadan kiring.');
+        /* Token eskirgan — jimgina yangilab, so'rovni bir marta qaytaramiz. */
+        return ensureToken(false).then(function () {
+          return request(path, Object.assign({}, options, { _retried: true }));
+        }, function () {
+          throw new Error('Sessiya tugadi — qaytadan kiring.');
+        });
       }
       return response.json().then(function (data) {
         if (!response.ok) {
@@ -161,12 +196,14 @@
     scopes: SCOPES,
 
     configure: function (id) {
-      if (id !== clientId) {
-        clientId = id || '';
-        tokenClient = null;
-        accessToken = '';
-        tokenExpiresAt = 0;
-      }
+      var next = id || '';
+      if (next === clientId) return;
+      /* Birinchi sozlashda (bo'shdan haqiqiy ID ga) saqlangan sessiya saqlanib
+         qoladi; ID haqiqatan almashsa, eski token yaroqsiz bo'ladi. */
+      var hadClient = !!clientId;
+      clientId = next;
+      tokenClient = null;
+      if (hadClient) clearToken(true);
     },
 
     isConfigured: function () { return !!clientId; },
@@ -174,16 +211,14 @@
 
     /** Ilgari kirgan bo'lsa, oyna ochmasdan sessiyani tiklashga urinadi. */
     wasSignedIn: function () {
-      try { return sessionStorage.getItem('automail.signedIn') === '1'; } catch (err) { return false; }
+      try { return localStorage.getItem(SESSION_KEY) === '1'; } catch (err) { return false; }
     },
 
     signIn: function () { return ensureToken(true); },
 
     signOut: function () {
       var token = accessToken;
-      accessToken = '';
-      tokenExpiresAt = 0;
-      try { sessionStorage.removeItem('automail.signedIn'); } catch (err) { /* ignore */ }
+      clearToken(true);
       if (token && global.google && global.google.accounts && global.google.accounts.oauth2) {
         global.google.accounts.oauth2.revoke(token, function () {});
       }
@@ -244,25 +279,54 @@
       });
     },
 
-    /** Xatga javob yozadi — o'sha tred ichida. */
-    sendReply: function (options) {
-      var subject = /^re:/i.test(options.subject) ? options.subject : 'Re: ' + options.subject;
+    /** Xat yuboradi. HTML berilsa multipart/alternative bo'lib ketadi
+        (eski mijozlar oddiy matnni, qolganlari kartochkani ko'radi). */
+    sendMail: function (options) {
+      var subject = options.subject || '';
+      if (options.reply && !/^re:/i.test(subject)) subject = 'Re: ' + subject;
+
       var lines = [
         'To: ' + options.to,
         'Subject: ' + encodeHeaderValue(subject),
-        'MIME-Version: 1.0',
-        'Content-Type: text/plain; charset="UTF-8"',
-        'Content-Transfer-Encoding: 8bit'
+        'MIME-Version: 1.0'
       ];
       if (options.rfcMessageId) {
         lines.push('In-Reply-To: ' + options.rfcMessageId);
         lines.push('References: ' + ((options.references ? options.references + ' ' : '') + options.rfcMessageId));
       }
-      lines.push('', options.body);
 
-      return request('/messages/send', {
-        method: 'POST',
-        body: { raw: encodeBase64Url(lines.join('\r\n')), threadId: options.threadId }
+      if (options.html) {
+        var boundary = 'automail-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        lines.push('Content-Type: multipart/alternative; boundary="' + boundary + '"', '');
+        lines.push('--' + boundary);
+        lines.push('Content-Type: text/plain; charset="UTF-8"', 'Content-Transfer-Encoding: 8bit', '');
+        lines.push(options.text || '');
+        lines.push('--' + boundary);
+        lines.push('Content-Type: text/html; charset="UTF-8"', 'Content-Transfer-Encoding: 8bit', '');
+        lines.push(options.html);
+        lines.push('--' + boundary + '--');
+      } else {
+        lines.push('Content-Type: text/plain; charset="UTF-8"', 'Content-Transfer-Encoding: 8bit', '');
+        lines.push(options.text || '');
+      }
+
+      var payload = { raw: encodeBase64Url(lines.join('\r\n')) };
+      if (options.threadId) payload.threadId = options.threadId;
+
+      return request('/messages/send', { method: 'POST', body: payload });
+    },
+
+    /** Xatga o'sha tred ichida javob yozadi. */
+    sendReply: function (options) {
+      return Gmail.sendMail({
+        to: options.to,
+        subject: options.subject,
+        text: options.body || options.text,
+        html: options.html,
+        threadId: options.threadId,
+        rfcMessageId: options.rfcMessageId,
+        references: options.references,
+        reply: true
       });
     },
 

@@ -19,7 +19,19 @@
       pollSeconds: 60,
       notify: false,
       signature: '',
-      theme: 'auto'
+      theme: 'auto',
+
+      /* Avtomatik javob */
+      autoReply: false,
+      autoReplySince: 0,        // shu vaqtdan keyingi xatlargagina javob beriladi
+      brandName: 'Auto Mail',
+      brandColor: '#1b2338',
+      autoReplyTitle: 'Xabaringiz qabul qilindi',
+      autoReplyText: 'Murojaatingiz ro\'yxatga olindi. Mutaxassisimiz uni ko\'rib chiqib, tez orada shu manzilga javob yozadi.',
+      autoReplySteps: 'Mutaxassis murojaatingizni ko\'rib chiqadi.\nZarur bo\'lsa, qo\'shimcha ma\'lumot uchun bog\'lanamiz.\nYakuniy javob shu manzilga alohida xat bo\'lib keladi.',
+      autoReplyUrl: '',
+      autoReplyButton: 'Saytga o\'tish',
+      autoReplyContact: ''
     },
     tickets: {},   // threadId -> ticket
     templates: [], // { title, body }
@@ -112,6 +124,8 @@
         status: 'new',
         note: '',
         replies: [],
+        autoReplied: 0,
+        ticketCode: '',
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
@@ -132,6 +146,18 @@
       if (!ticket) return null;
       ticket.replies.push({ text: text, at: Date.now() });
       ticket.status = 'done';
+      ticket.updatedAt = Date.now();
+      persist();
+      return ticket;
+    },
+
+    /** Avtomatik javob yuborilganini belgilaydi. */
+    markAutoReplied: function (id, ticketCode) {
+      var ticket = state.tickets[id];
+      if (!ticket) return null;
+      ticket.autoReplied = Date.now();
+      ticket.ticketCode = ticketCode;
+      if (ticket.status === 'new') ticket.status = 'progress';
       ticket.updatedAt = Date.now();
       persist();
       return ticket;

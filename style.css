@@ -54,7 +54,7 @@ a { color: var(--accent); }
   z-index: 20;
 }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.brand strong { display: block; line-height: 1.1; }
+.brand strong { display: block; line-height: 1.1; white-space: nowrap; }
 .account {
   display: block;
   font-size: 12px;
@@ -109,6 +109,18 @@ a { color: var(--accent); }
 }
 .list-panel { position: sticky; top: 78px; max-height: calc(100dvh - 92px); display: flex; flex-direction: column; }
 .list-head { padding: 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.new-chat {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.new-chat:hover { filter: brightness(1.06); }
 #searchInput {
   width: 100%;
   padding: 9px 12px;
@@ -274,6 +286,27 @@ textarea:focus, select:focus { border-color: var(--accent); }
 .howto ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; }
 .howto code { background: var(--accent-soft); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
 .sheet-foot { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+.sheet-body h3 { margin: 4px 0 0; font-size: 15px; }
+.sheet-body .sep { border: 0; border-top: 1px solid var(--line); margin: 6px 0 2px; }
+.sheet-body code { background: var(--accent-soft); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+.sheet-body input[type="color"] {
+  width: 100%;
+  height: 42px;
+  margin-top: 6px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+.sheet.wide { max-width: 720px; }
+#previewFrame {
+  width: 100%;
+  height: min(62dvh, 560px);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.sheet .primary { margin-left: 0; }
 
 /* ---------- toast ---------- */
 .toast {
