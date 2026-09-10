@@ -45,7 +45,8 @@
       autoReply: false,
       autoReplySince: 0,        // shu vaqtdan keyingi xatlargagina javob beriladi
       cardLang: 'en',           // mijozga ketadigan kartochka tili
-      brandName: 'Capline Group',
+      brandName: 'Founder Capline Group',
+      logoUrl: '',
       brandColor: '#1b2338',
       autoReplyTitle: '',
       autoReplyText: '',
@@ -58,7 +59,8 @@
     tickets: {},   // threadId -> ticket
     templates: [], // { title, body }
     lastSync: 0,
-    historyId: ''  // Gmail tarixidagi oxirgi belgi
+    historyId: '', // Gmail tarixidagi oxirgi belgi
+    account: ''    // navbat qaysi pochtaga tegishli
   };
 
   function clone(value) {
@@ -76,6 +78,7 @@
         state.templates = Array.isArray(saved.templates) ? saved.templates : [];
         state.lastSync = saved.lastSync || 0;
         state.historyId = saved.historyId || '';
+        state.account = saved.account || '';
       }
     } catch (err) {
       console.warn('Saqlangan holatni o\'qib bo\'lmadi:', err);
@@ -84,6 +87,11 @@
   }
 
   var state = load();
+
+  /* Eski standart brend nomlari yangisiga ko'chiriladi. */
+  if (['Auto Mail', 'Capline Group'].indexOf(state.settings.brandName) !== -1) {
+    state.settings.brandName = DEFAULTS.settings.brandName;
+  }
 
   if (!state.settings.clientId || isRetired(state.settings.clientId)) {
     if (isRetired(state.settings.clientId)) forgetSession();
@@ -223,6 +231,31 @@
 
     setLastSync: function (time) {
       state.lastSync = time;
+      persist();
+    },
+
+    /** Kirilgan pochtani belgilaydi. Boshqa hisobga o'tilgan bo'lsa,
+        oldingi hisobning navbati tozalanadi — aks holda begona xatlar
+        yangi hisobda ko'rinib qolardi. */
+    setAccount: function (email) {
+      var next = String(email || '').toLowerCase();
+      if (!next || next === state.account) return false;
+      var switched = !!state.account;
+      state.account = next;
+      if (switched) {
+        state.tickets = {};
+        state.historyId = '';
+        state.lastSync = 0;
+      }
+      persist();
+      return switched;
+    },
+
+    /** Navbatni butunlay tozalaydi (xatlar Gmail'da qoladi). */
+    clearTickets: function () {
+      state.tickets = {};
+      state.historyId = '';
+      state.lastSync = 0;
       persist();
     },
 

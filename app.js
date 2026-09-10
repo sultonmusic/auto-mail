@@ -40,6 +40,7 @@
     addAccount: $('addAccountBtn'),
     switchAccount: $('switchAccountBtn'),
     responseTime: $('responseTimeInput'),
+    logoUrl: $('logoUrlInput'),
     categoryList: $('categoryList'),
     labelList: $('labelList'),
     boxIcon: $('boxIcon'),
@@ -57,6 +58,7 @@
     composeBody: $('composeBody'),
     composeCard: $('composeCard'),
     previewBtn: $('previewBtn'),
+    clearQueue: $('clearQueueBtn'),
     previewDialog: $('previewDialog'),
     previewFrame: $('previewFrame'),
     autoReply: $('autoReplyInput'),
@@ -189,7 +191,8 @@
 
   function boxRow(box) {
     var counts = Store.counts();
-    var count = box.id === 'queue' ? counts.new
+    var count = box.id === 'queue'
+      ? queueItems(box).filter(function (ticket) { return ticket.status === 'new'; }).length
       : (box.priority ? counts[box.priority] : (ui.counts[box.id] || 0));
     return '<li><button class="box-item' + (ui.box.id === box.id ? ' active' : '') + '"' +
       ' data-box="' + escapeHtml(box.id) + '">' +
@@ -429,13 +432,22 @@
   }
 
   function renderCounts() {
-    var counts = Store.counts();
+    /* Sanoqlar aynan ochiq qutidagi xatlarni ko'rsatadi — masalan bosh
+       navbatda bekorchilar ko'rinmagani uchun ular sanalmaydi ham. */
+    var items = isQueueBox(ui.box) ? queueItems(ui.box) : ui.browse;
+    var counts = { new: 0, progress: 0, done: 0, all: items.length };
+    items.forEach(function (item) {
+      if (counts[item.status] !== undefined) counts[item.status]++;
+    });
     Object.keys(counts).forEach(function (key) {
       var node = el.tabs.querySelector('[data-count="' + key + '"]');
       if (node) node.textContent = counts[key];
     });
+    var pending = queueItems(BOXES[0]).filter(function (ticket) {
+      return ticket.status === 'new';
+    }).length;
     var brand = (Store.settings.brandName || 'Auto Mail').trim();
-    document.title = (counts.new ? '(' + counts.new + ') ' : '') + brand;
+    document.title = (pending ? '(' + pending + ') ' : '') + brand;
   }
 
   function rowHtml(item) {
@@ -820,6 +832,19 @@
 
   /* ---------- kartochka namunasi ---------- */
 
+  el.clearQueue.addEventListener('click', function () {
+    if (!confirm(t('confirm.clearQueue'))) return;
+    Store.clearTickets();
+    ui.selected = null;
+    ui.current = null;
+    ui.lastFullSync = 0;
+    el.detail.hidden = true;
+    el.detailEmpty.hidden = false;
+    renderMenu();
+    renderList();
+    toast(t('toast.queueCleared'));
+  });
+
   el.previewBtn.addEventListener('click', function () {
     var lang = el.cardLang.value || 'en';
     var card = Template.buildAutoReply(readAutoReplyFields(), {
@@ -1028,6 +1053,19 @@
     return Gmail.profile().then(function (profile) {
       ui.myEmail = profile.emailAddress || '';
       el.account.textContent = ui.myEmail || t('status.connected');
+      /* Boshqa pochtaga kirilgan bo'lsa, oldingi hisobning navbati o'chadi. */
+      if (Store.setAccount(ui.myEmail)) {
+        ui.browse = [];
+        ui.labels = [];
+        ui.counts = {};
+        ui.selected = null;
+        ui.current = null;
+        ui.lastFullSync = 0;
+        el.detail.hidden = true;
+        el.detailEmpty.hidden = false;
+        renderMenu();
+        renderList();
+      }
     }).catch(function () {});
   }
 
@@ -1053,6 +1091,7 @@
     el.autoButton.value = settings.autoReplyButton;
     el.autoContact.value = settings.autoReplyContact;
     el.responseTime.value = settings.responseTime;
+    el.logoUrl.value = settings.logoUrl;
     updateCardHints();
   }
 
@@ -1060,7 +1099,7 @@
   function readAutoReplyFields() {
     return Object.assign({}, Store.settings, {
       cardLang: el.cardLang.value || 'en',
-      brandName: el.brandName.value.trim() || 'Auto Mail',
+      brandName: el.brandName.value.trim() || Store.settings.brandName,
       brandColor: el.brandColor.value,
       autoReplyTitle: el.autoTitle.value.trim(),
       autoReplyText: el.autoText.value,
@@ -1068,7 +1107,8 @@
       autoReplyUrl: el.autoUrl.value.trim(),
       autoReplyButton: el.autoButton.value.trim(),
       autoReplyContact: el.autoContact.value.trim(),
-      responseTime: el.responseTime.value.trim()
+      responseTime: el.responseTime.value.trim(),
+      logoUrl: el.logoUrl.value.trim()
     });
   }
 

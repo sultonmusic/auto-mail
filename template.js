@@ -91,6 +91,7 @@
     var buttonText = settings.autoReplyButton || L('defaultButton');
     var contact = (settings.autoReplyContact || '').trim();
     var responseTime = fill(settings.responseTime || L('defaultResponseTime'), data);
+    var logo = (settings.logoUrl || '').trim();
 
     var html = '' +
 '<!doctype html><html><body style="margin:0;padding:0;background:#eef1f7;">' +
@@ -98,9 +99,17 @@
 '<tr><td align="center">' +
   '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%;max-width:600px;">' +
 
-    /* brend paneli */
-    '<tr><td style="background:' + escapeHtml(color) + ';border-radius:14px;padding:20px 26px;">' +
-      '<div style="font:700 20px/1.3 Arial,Helvetica,sans-serif;color:#ffffff;">' + escapeHtml(brand) + '</div>' +
+    /* brend paneli — logo bo'lsa nom yonida turadi */
+    '<tr><td style="background:' + escapeHtml(color) + ';border-radius:14px;padding:18px 24px;">' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>' +
+        (logo ? '<td style="padding-right:14px;" valign="middle">' +
+          '<img src="' + escapeHtml(logo) + '" width="44" height="44" alt="" ' +
+          'style="display:block;width:44px;height:44px;border-radius:10px;object-fit:cover;background:#ffffff;">' +
+        '</td>' : '') +
+        '<td valign="middle">' +
+          '<div style="font:700 20px/1.3 Arial,Helvetica,sans-serif;color:#ffffff;">' + escapeHtml(brand) + '</div>' +
+        '</td>' +
+      '</tr></table>' +
     '</td></tr>' +
     '<tr><td style="height:14px;line-height:14px;">&nbsp;</td></tr>' +
 
