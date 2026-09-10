@@ -57,6 +57,10 @@
 
   <section class="panel list-panel">
     <div class="list-head">
+      <div class="notice" id="autoReplyNotice" hidden>
+        <span data-i18n="banner.autoReplyOff"></span>
+        <button type="button" id="enableAutoReply" data-i18n="banner.enable"></button>
+      </div>
       <button class="new-chat" id="newChatBtn" data-i18n="list.newChat"></button>
       <div class="box-header"><span class="box-icon" id="boxIcon"></span><strong id="boxTitle"></strong></div>
       <input type="search" id="searchInput" data-i18n-ph="list.search" autocomplete="off">
@@ -91,6 +95,7 @@
           <button data-set="new" data-i18n="detail.setNew"></button>
           <button data-set="progress" data-i18n="detail.setProgress"></button>
           <button data-set="done" data-i18n="detail.setDone"></button>
+          <button class="ghost" id="cardReplyBtn" data-i18n="detail.cardReply"></button>
           <button class="ghost" id="queueBtn" data-i18n="browse.addToQueue" hidden></button>
           <button class="ghost" id="openGmail" data-i18n="detail.openGmail"></button>
         </div>

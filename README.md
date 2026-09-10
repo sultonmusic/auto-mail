@@ -98,6 +98,15 @@ Yuqoridagi panelda ikkita tugma bor:
 - **🤖 / 💤** — avtomatik javobni yoqadi va o'chiradi. Yoqilganda oxirgi **10 daqiqada** kelgan xatlar ham qamrab olinadi, shunda hozirgina tushgan xat javobsiz qolmaydi.
 - **🔔 / 🔕** — qurilma bildirishnomasi. Birinchi bosganda brauzer ruxsat so'raydi. Bildirishnoma service worker orqali chiqariladi (Android'da faqat shu yo'l ishlaydi) va bosilganda ilova ochiladi.
 
+### Nega avtomatik javob kelmasligi mumkin
+
+1. **O'chiq turibdi.** Ro'yxat tepasida sariq ogohlantirish chiqadi — **Yoqish** bosiladi (yoki yuqoridagi 🤖 tugmasi).
+2. **Xat o'zingizdan.** O'zingizga yozilgan xat na navbatga tushadi (`-from:me`), na javob oladi — bu ataylab shunday. Sinov uchun boshqa manzildan yuboring.
+3. **Robot manzil yoki bekorchi.** `noreply@` kabi manzillar va ma'nosiz matnlar chetlab o'tiladi.
+4. **Xat yoqishdan oldin kelgan.** Yoqilganda oxirgi 10 daqiqa qamrab olinadi, undan eskisiga javob ketmaydi.
+
+Istalgan xatga **shu zahoti** kartochkali javob yuborish uchun xatni ochib **🤖 Kartochka bilan javob berish** tugmasini bosing — u cheklovlarga bog'liq emas.
+
 ### Avtomatik javob qanday himoyalangan
 
 Xatolik bilan yuzlab xat ketib qolmasligi uchun bir nechta cheklov qo'yilgan:

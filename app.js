@@ -33,6 +33,9 @@
     menuBtn: $('menuBtn'),
     notifyBtn: $('notifyBtn'),
     autoReplyBtn: $('autoReplyBtn'),
+    autoReplyNotice: $('autoReplyNotice'),
+    enableAutoReply: $('enableAutoReply'),
+    cardReplyBtn: $('cardReplyBtn'),
     scrim: $('scrim'),
     sidePanel: $('sidePanel'),
     boxList: $('boxList'),
@@ -341,10 +344,11 @@
 
   /* ---------- til ---------- */
 
-  function fillLangSelect(select, selected) {
+  function fillLangSelect(select, selected, short) {
     select.innerHTML = I18n.list().map(function (item) {
+      var label = short ? item.code.toUpperCase() : item.name;
       return '<option value="' + item.code + '"' +
-        (item.code === selected ? ' selected' : '') + '>' + escapeHtml(item.name) + '</option>';
+        (item.code === selected ? ' selected' : '') + '>' + escapeHtml(label) + '</option>';
     }).join('');
   }
 
@@ -358,7 +362,7 @@
   function applyLanguage(lang) {
     I18n.setLang(lang);
     I18n.translate();
-    fillLangSelect(el.langSelect, I18n.lang);
+    fillLangSelect(el.langSelect, I18n.lang, true);
     fillLangSelect(el.langSettings, I18n.lang);
     renderTemplates();
     renderList();
@@ -612,6 +616,7 @@
     el.note.parentNode.hidden = !data.queue;
     el.queueBtn.hidden = data.queue;
 
+    el.cardReplyBtn.hidden = !data.fromEmail;
     var verdict = data.priority ? data : Analyzer.classify(data);
     el.aiBadge.hidden = false;
     el.aiBadge.dataset.priority = verdict.priority;
@@ -627,6 +632,46 @@
   }
 
   /** Jonli qutidagi xatni ish navbatiga oladi. */
+  /** Ochiq xatga avtomatik javob kartochkasini shu zahoti yuboradi.
+      Cheklovlarga bog'liq emas — sinash va bir martalik javob uchun. */
+  el.cardReplyBtn.addEventListener('click', function () {
+    var data = ui.current;
+    if (!data) return;
+    if (ui.myEmail && data.fromEmail &&
+        data.fromEmail.toLowerCase() === ui.myEmail.toLowerCase()) {
+      toast(t('toast.selfMail'));
+    }
+
+    var card = Template.buildAutoReply(Store.settings, {
+      threadId: data.threadId,
+      from: data.from,
+      fromEmail: data.fromEmail,
+      subject: data.subject,
+      date: data.date
+    });
+
+    el.cardReplyBtn.disabled = true;
+    Gmail.sendReply({
+      to: data.fromEmail,
+      subject: card.subject,
+      text: card.text,
+      html: card.html,
+      threadId: data.threadId,
+      rfcMessageId: data.rfcMessageId,
+      references: data.references
+    }).then(function () {
+      if (data.queue) Store.markAutoReplied(data.id, card.ticket);
+      toast(t('toast.cardSent'));
+      renderMenu();
+      renderList();
+      if (data.queue) openItem(data.id);
+    }).catch(function (err) {
+      toast(t('toast.sendFailed', { error: err.message }));
+    }).then(function () {
+      el.cardReplyBtn.disabled = false;
+    });
+  });
+
   el.queueBtn.addEventListener('click', function () {
     var data = ui.current;
     if (!data || data.queue) return;
@@ -956,10 +1001,10 @@
     var on = !!Store.settings.autoReply;
     el.autoReplyBtn.dataset.on = on ? 'yes' : 'no';
     el.autoReplyBtn.textContent = on ? '🤖' : '💤';
+    el.autoReplyNotice.hidden = on;
   }
 
-  el.autoReplyBtn.addEventListener('click', function () {
-    var on = !Store.settings.autoReply;
+  function setAutoReply(on) {
     var patch = { autoReply: on };
     /* Yoqilganda oxirgi 10 daqiqada kelgan xatlar ham qamrab olinadi —
        hozirgina tushgan xat javobsiz qolib ketmasin. */
@@ -968,7 +1013,13 @@
     updateAutoReplyUi();
     toast(t(on ? 'toast.autoReplyOn' : 'toast.autoReplyOff'));
     if (on) sync(false);
+  }
+
+  el.autoReplyBtn.addEventListener('click', function () {
+    setAutoReply(!Store.settings.autoReply);
   });
+
+  el.enableAutoReply.addEventListener('click', function () { setAutoReply(true); });
 
   function sync(interactive) {
     if (ui.syncing) return Promise.resolve();
@@ -1260,7 +1311,7 @@
   function init() {
     applyTheme(Store.settings.theme);
     I18n.setLang(Store.settings.lang);
-    fillLangSelect(el.langSelect, I18n.lang);
+    fillLangSelect(el.langSelect, I18n.lang, true);
     fillLangSelect(el.langSettings, I18n.lang);
     I18n.translate();
     renderTemplates();
