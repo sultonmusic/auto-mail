@@ -34,7 +34,7 @@
     settings: {
       clientId: '',
       query: 'in:inbox -from:me newer_than:7d',
-      pollSeconds: 20,
+      pollSeconds: 15,
       notify: false,
       signature: '',
       theme: 'auto',
@@ -87,6 +87,10 @@
   }
 
   var state = load();
+
+  /* Eski standart tekshiruv oralig'i (60 soniya) yangisiga tushiriladi —
+     avtomatik javob bir daqiqagacha kechikib qolmasin. */
+  if (state.settings.pollSeconds === 60) state.settings.pollSeconds = DEFAULTS.settings.pollSeconds;
 
   /* Eski standart brend nomlari yangisiga ko'chiriladi. */
   if (['Auto Mail', 'Capline Group'].indexOf(state.settings.brandName) !== -1) {

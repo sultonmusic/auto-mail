@@ -6,7 +6,7 @@ Serversiz ishlaydi: butun mantiq brauzerda, GitHub Pages'da bepul turadi. PWA �
 
 ## Nima qiladi
 
-- **Deyarli real vaqtda.** Har **20 soniyada** (sozlanadi, eng kami 10) Gmail tekshiriladi. Tekshiruv Gmail'ning **History API**'si orqali ketadi — bu «oxirgi tekshiruvdan beri nima o'zgardi?» degan arzon so'rov, shuning uchun tez-tez so'rasa ham yuk bermaydi. Har 5 daqiqada bir marta to'liq qidiruv ham qilinadi, hech narsa e'tibordan qolmasin uchun. Oynaga qaytilganda va internet tiklanganda darhol yangilanadi.
+- **Deyarli real vaqtda.** Har **15 soniyada** (sozlanadi, eng kami 10) Gmail tekshiriladi. Tekshiruv Gmail'ning **History API**'si orqali ketadi — bu «oxirgi tekshiruvdan beri nima o'zgardi?» degan arzon so'rov, shuning uchun tez-tez so'rasa ham yuk bermaydi. Har 5 daqiqada bir marta to'liq qidiruv ham qilinadi, hech narsa e'tibordan qolmasin uchun. Oynaga qaytilganda va internet tiklanganda darhol yangilanadi.
 - **AI tahlil.** Har bir xat mavzusi, matni va jo'natuvchisi bo'yicha baholanadi: **Muhim** (ish bilan bog'liq so'zlar, savol, javobsiz turgan yozishma) tepaga chiqadi, **Bekorchi** (`jddhddldjdkdld` kabi ma'nosiz yozuvlar, robot xabarlari) bosh ro'yxatdan olib, alohida bo'limga tushadi. Tashqi xizmat kerak emas — tahlil brauzerda bajariladi. Xat ochilganda AI qarori sababi bilan ko'rsatiladi.
 - **Avtomatik javob.** Yangi xat kelishi bilan chiroyli HTML kartochka javob bo'lib ketadi: brend paneli, murojaat raqami, mavzu, sana, **javob berish muddati** va keyingi qadamlar. Javob mavzusining oxiriga murojaat raqami qo'shiladi: `Re: Hello [#7501809]`.
 - **Yangi xat.** Panelning o'zidan yangi manzilga xat yozish (xohlasangiz o'sha kartochka ko'rinishida).
@@ -73,7 +73,7 @@ python3 -m http.server 8080
 |---|---|
 | **Client ID** | Google OAuth Web client identifikatori. Bo'sh qoldirilsa, kodagi standart ID ishlatiladi |
 | **Gmail qidiruv sharti** | Qaysi xatlar navbatga olinishi. Standart: `in:inbox -from:me newer_than:7d`. Masalan faqat o'qilmaganlar: `is:unread in:inbox` |
-| **Avtomatik tekshiruv** | Necha soniyada bir Gmail tekshirilsin (10–3600, standart 20) |
+| **Avtomatik tekshiruv** | Necha soniyada bir Gmail tekshirilsin (10–3600, standart 15) |
 | **Bildirishnoma** | Yangi xat kelganda brauzer bildirishnomasi |
 | **Imzo** | Qo'lda yozilgan javob oxiriga qo'shiladigan matn |
 | **Panel tili** | Interfeys tili (uz / en / ru) |
@@ -90,6 +90,13 @@ python3 -m http.server 8080
 Matnlarda o'rin egallovchilar ishlaydi: `{name}`/`{ism}`, `{subject}`/`{mavzu}`, `{ticket}`, `{date}`/`{sana}`.
 
 Kartochka matn maydonlari **bo'sh** qoldirilsa, tanlangan javob tilidagi tayyor matn ishlatiladi — «Tanlangan tildagi tayyor matnni qo'yish» tugmasi uni maydonlarga chiqaradi.
+
+### Tez yoqish tugmalari
+
+Yuqoridagi panelda ikkita tugma bor:
+
+- **🤖 / 💤** — avtomatik javobni yoqadi va o'chiradi. Yoqilganda oxirgi **10 daqiqada** kelgan xatlar ham qamrab olinadi, shunda hozirgina tushgan xat javobsiz qolmaydi.
+- **🔔 / 🔕** — qurilma bildirishnomasi. Birinchi bosganda brauzer ruxsat so'raydi. Bildirishnoma service worker orqali chiqariladi (Android'da faqat shu yo'l ishlaydi) va bosilganda ilova ochiladi.
 
 ### Avtomatik javob qanday himoyalangan
 

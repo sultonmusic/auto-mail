@@ -98,6 +98,8 @@ a { color: var(--accent); }
   line-height: 1;
 }
 .icon-btn:hover { background: var(--accent-soft); }
+.icon-btn[data-on="yes"] { background: var(--accent-soft); border-color: var(--accent); }
+.icon-btn[data-on="no"] { opacity: .55; }
 .back-btn { display: none; font-size: 22px; }
 .status {
   font-size: 12px;

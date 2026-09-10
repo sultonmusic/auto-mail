@@ -1,6 +1,6 @@
 /* Auto Mail — oflayn qobiq. Faqat o'z fayllarimizni keshlaydi;
    Gmail API so'rovlari hech qachon keshlanmaydi. */
-var CACHE = 'automail-v2';
+var CACHE = 'automail-v3';
 var SHELL = [
   './',
   './index.html',
@@ -46,6 +46,24 @@ self.addEventListener('fetch', function (event) {
       return caches.match(request).then(function (cached) {
         return cached || caches.match('./index.html');
       });
+    })
+  );
+});
+
+/* Bildirishnoma bosilganda ochiq oynani old planga chiqaramiz,
+   ochiq bo'lmasa ilovani ochamiz. */
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  var target = (event.notification.data && event.notification.data.url) || './';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windows) {
+      for (var i = 0; i < windows.length; i++) {
+        if (windows[i].url.indexOf(self.registration.scope) === 0 && 'focus' in windows[i]) {
+          return windows[i].focus();
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(target);
     })
   );
 });

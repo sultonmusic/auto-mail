@@ -31,6 +31,8 @@
     templateSelect: $('templateSelect'),
     saveTemplate: $('saveTemplate'),
     menuBtn: $('menuBtn'),
+    notifyBtn: $('notifyBtn'),
+    autoReplyBtn: $('autoReplyBtn'),
     scrim: $('scrim'),
     sidePanel: $('sidePanel'),
     boxList: $('boxList'),
@@ -361,6 +363,8 @@
     renderTemplates();
     renderList();
     updateAuthUi();
+    updateNotifyUi();
+    updateAutoReplyUi();
     updateCardHints();
     applyBrand();
 
@@ -762,7 +766,7 @@
         });
         return Gmail.sendReply({
           to: ticket.fromEmail,
-          subject: ticket.subject,
+          subject: card.subject,      // murojaat raqami bilan
           text: card.text,
           html: card.html,
           threadId: ticket.id,
@@ -773,6 +777,7 @@
           return sent + 1;
         }, function (err) {
           console.warn('Avtomatik javob yuborilmadi:', err.message);
+          toast(t('toast.autoReplyFailed', { error: err.message }));
           return sent;
         });
       });
@@ -860,14 +865,110 @@
 
   /* ---------- sinxronizatsiya ---------- */
 
-  function notifyNew(count) {
-    if (!Store.settings.notify || !('Notification' in window)) return;
+  function notifySupported() {
+    return 'Notification' in window;
+  }
+
+  function updateNotifyUi() {
+    var on = Store.settings.notify && notifySupported() && Notification.permission === 'granted';
+    el.notifyBtn.dataset.on = on ? 'yes' : 'no';
+    el.notifyBtn.textContent = on ? '🔔' : '🔕';
+  }
+
+  /**
+   * Qurilmaga bildirishnoma chiqaradi.
+   * Android'da `new Notification()` ishlamaydi — faqat service worker
+   * orqali chiqarish mumkin, shuning uchun avval o'sha yo'l sinaladi.
+   */
+  function showNotification(title, body) {
+    var options = {
+      body: body,
+      icon: './logo.png',
+      badge: './logo.png',
+      tag: 'automail-new',
+      renotify: true,
+      vibrate: [80, 40, 80],
+      data: { url: location.href }
+    };
+
+    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then(function (registration) {
+        return registration.showNotification(title, options);
+      }).catch(function () {
+        try { new Notification(title, options); } catch (err) { /* qo'llab-quvvatlanmaydi */ }
+      });
+      return;
+    }
+    try { new Notification(title, options); } catch (err) { /* qo'llab-quvvatlanmaydi */ }
+  }
+
+  function notifyNew(mails) {
+    if (!Store.settings.notify || !notifySupported()) return;
     if (Notification.permission !== 'granted') return;
-    new Notification('Auto Mail', {
-      body: count === 1 ? t('notify.one') : t('notify.many', { count: count }),
-      icon: './icon.svg'
+
+    var brand = (Store.settings.brandName || 'Auto Mail').trim();
+    var count = mails.length;
+    var hasImportant = mails.some(function (mail) { return mail.priority === 'high'; });
+    var title = (hasImportant ? '🔥 ' : '') + brand;
+    var body = count === 1
+      ? t('notify.from', {
+          name: mails[0].from || mails[0].fromEmail,
+          subject: mails[0].subject
+        })
+      : t('notify.many', { count: count });
+
+    showNotification(title, body);
+  }
+
+  /** Tugma bosilganda ruxsat so'raydi yoki o'chiradi. */
+  function toggleNotifications() {
+    if (!notifySupported()) return toast(t('toast.notifyUnsupported'));
+
+    if (Store.settings.notify && Notification.permission === 'granted') {
+      Store.saveSettings({ notify: false });
+      updateNotifyUi();
+      return toast(t('toast.notifyOff'));
+    }
+
+    if (Notification.permission === 'denied') {
+      updateNotifyUi();
+      return toast(t('toast.notifyBlocked'));
+    }
+
+    /* Ruxsat faqat foydalanuvchi bosgan paytda so'ralishi mumkin. */
+    Notification.requestPermission().then(function (result) {
+      if (result === 'granted') {
+        Store.saveSettings({ notify: true });
+        updateNotifyUi();
+        toast(t('toast.notifyOn'));
+        showNotification((Store.settings.brandName || 'Auto Mail').trim(), t('toast.notifyOn'));
+      } else {
+        Store.saveSettings({ notify: false });
+        updateNotifyUi();
+        toast(t('toast.notifyBlocked'));
+      }
     });
   }
+
+  el.notifyBtn.addEventListener('click', toggleNotifications);
+
+  function updateAutoReplyUi() {
+    var on = !!Store.settings.autoReply;
+    el.autoReplyBtn.dataset.on = on ? 'yes' : 'no';
+    el.autoReplyBtn.textContent = on ? '🤖' : '💤';
+  }
+
+  el.autoReplyBtn.addEventListener('click', function () {
+    var on = !Store.settings.autoReply;
+    var patch = { autoReply: on };
+    /* Yoqilganda oxirgi 10 daqiqada kelgan xatlar ham qamrab olinadi —
+       hozirgina tushgan xat javobsiz qolib ketmasin. */
+    if (on) patch.autoReplySince = Date.now() - 10 * 60 * 1000;
+    Store.saveSettings(patch);
+    updateAutoReplyUi();
+    toast(t(on ? 'toast.autoReplyOn' : 'toast.autoReplyOff'));
+    if (on) sync(false);
+  });
 
   function sync(interactive) {
     if (ui.syncing) return Promise.resolve();
@@ -887,28 +988,32 @@
         var known = {};
         Store.list().forEach(function (ticket) { known[ticket.messageId] = true; });
         var fresh = ids.filter(function (id) { return !known[id]; });
-        if (!fresh.length) return 0;
+        if (!fresh.length) return [];
 
         return mapLimit(fresh, 4, function (id) {
           return Gmail.getHeaders(id).catch(function () { return null; });
         }).then(function (mails) {
-          var added = 0;
+          var addedMails = [];
           mails.filter(Boolean).forEach(function (mail) {
             /* Tarix butun pochta bo'yicha keladi — o'z xatlarimizni o'tkazamiz. */
             if (ui.myEmail && mail.fromEmail &&
                 mail.fromEmail.toLowerCase() === ui.myEmail.toLowerCase()) return;
-            if (Store.upsertFromMail(mail)) added++;
+            if (Store.upsertFromMail(mail)) {
+              var ticket = Store.get(mail.threadId);
+              addedMails.push(ticket || mail);
+            }
           });
-          return added;
+          return addedMails;
         });
       })
-      .then(function (added) {
+      .then(function (addedMails) {
+        var added = addedMails.length;
         Store.setLastSync(Date.now());
         renderList();
         ui.authRetries = 0;
         setStatus('on', t('status.connected') + ' · ' + formatDate(Date.now()));
         if (added > 0) {
-          notifyNew(added);
+          notifyNew(addedMails);
           toast(t('toast.newMails', { count: added }));
         }
         return runAutoReplies();
@@ -1133,17 +1238,19 @@
 
     /* Avtomatik javob endi yoqildi — eski xatlarga javob ketib qolmasligi
        uchun sanoqni shu paytdan boshlaymiz. */
-    if (patch.autoReply && !wasAutoReply) patch.autoReplySince = Date.now();
+    if (patch.autoReply && !wasAutoReply) patch.autoReplySince = Date.now() - 10 * 60 * 1000;
 
     Store.saveSettings(patch);
 
     Gmail.configure(Store.settings.clientId);
     schedulePolling();
 
-    if (wantsNotify && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+    if (wantsNotify && notifySupported() && Notification.permission === 'default') {
+      Notification.requestPermission().then(updateNotifyUi);
     }
+    updateNotifyUi();
     applyBrand();
+    updateAutoReplyUi();
     toast(t('toast.settingsSaved'));
     signInFlow();
   });
@@ -1162,6 +1269,8 @@
     fillSettings();
     applyBrand();
     setMenuOpen(false);
+    updateNotifyUi();
+    updateAutoReplyUi();
     el.account.textContent = t('top.accountNone');
     Gmail.configure(Store.settings.clientId);
 
