@@ -10,7 +10,25 @@
   /* Loyihaning o'z Google OAuth Client ID'si. Bu maxfiy kalit emas —
      OAuth client ID ochiq bo'lishi mo'ljallangan (maxfiysi client secret,
      u bu ilovada umuman ishlatilmaydi). Sozlamalardan almashtirsa bo'ladi. */
-  var DEFAULT_CLIENT_ID = '340616217035-qsf3k081e3fo0ob7a5159it2l45dtc20.apps.googleusercontent.com';
+  var DEFAULT_CLIENT_ID = '1008435124974-cdve0d4rkq1hs3v29a6qs3pmliieckbf.apps.googleusercontent.com';
+
+  /* Eskirgan Google loyihalari. Shu prefiks bilan saqlangan ID yangisiga
+     almashtiriladi va eski sessiya tozalanadi — aks holda ilova
+     mavjud bo'lmagan loyihaga ulanishga urinib qolardi. */
+  var RETIRED_PREFIXES = ['340616217035-'];
+
+  function isRetired(clientId) {
+    return RETIRED_PREFIXES.some(function (prefix) {
+      return String(clientId || '').indexOf(prefix) === 0;
+    });
+  }
+
+  function forgetSession() {
+    try {
+      localStorage.removeItem('automail.token');
+      localStorage.removeItem('automail.signedIn');
+    } catch (err) { /* ignore */ }
+  }
 
   var DEFAULTS = {
     settings: {
@@ -66,7 +84,11 @@
   }
 
   var state = load();
-  if (!state.settings.clientId) state.settings.clientId = DEFAULT_CLIENT_ID;
+
+  if (!state.settings.clientId || isRetired(state.settings.clientId)) {
+    if (isRetired(state.settings.clientId)) forgetSession();
+    state.settings.clientId = DEFAULT_CLIENT_ID;
+  }
 
   /* Ilgari saqlangan xatlar hali baholanmagan bo'lishi mumkin. */
   Object.keys(state.tickets).forEach(function (id) {
