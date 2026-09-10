@@ -1,6 +1,6 @@
 {
-  "name": "Auto Mail — Gmail navbat va admin panel",
-  "short_name": "Auto Mail",
+  "name": "Founder Capline Group — Gmail navbat",
+  "short_name": "Capline Mail",
   "description": "Gmail'ga kelgan xatlar avtomatik navbatga olinadi, admin panelda ko'riladi va javob beriladi.",
   "start_url": "./",
   "scope": "./",
@@ -9,6 +9,8 @@
   "theme_color": "#0b1020",
   "lang": "uz",
   "icons": [
-    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "./logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./logo.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ]
 }

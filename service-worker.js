@@ -1,6 +1,6 @@
 /* Auto Mail — oflayn qobiq. Faqat o'z fayllarimizni keshlaydi;
    Gmail API so'rovlari hech qachon keshlanmaydi. */
-var CACHE = 'automail-v1';
+var CACHE = 'automail-v2';
 var SHELL = [
   './',
   './index.html',
@@ -9,6 +9,10 @@ var SHELL = [
   './gmail.js',
   './app.js',
   './icon.svg',
+  './logo.png',
+  './i18n.js',
+  './analyzer.js',
+  './template.js',
   './manifest.webmanifest'
 ];
 

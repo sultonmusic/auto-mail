@@ -4,6 +4,16 @@
 (function (global) {
   'use strict';
 
+  /** Sozlamada logo ko'rsatilmagan bo'lsa, ilovaning o'z logosi ishlatiladi.
+      Email uchun manzil to'liq (absolute) bo'lishi shart. */
+  function defaultLogo() {
+    try {
+      return new URL('logo.png', location.href).href;
+    } catch (err) {
+      return '';
+    }
+  }
+
   function pad(number) { return (number < 10 ? '0' : '') + number; }
 
   /** Ro'yxat va sarlavhalar uchun: 9-sentabr, 2026 · 15:27 */
@@ -91,7 +101,7 @@
     var buttonText = settings.autoReplyButton || L('defaultButton');
     var contact = (settings.autoReplyContact || '').trim();
     var responseTime = fill(settings.responseTime || L('defaultResponseTime'), data);
-    var logo = (settings.logoUrl || '').trim();
+    var logo = (settings.logoUrl || '').trim() || defaultLogo();
 
     var html = '' +
 '<!doctype html><html><body style="margin:0;padding:0;background:#eef1f7;">' +

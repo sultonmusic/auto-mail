@@ -54,6 +54,7 @@ a { color: var(--accent); }
   z-index: 20;
 }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-logo { border-radius: 8px; object-fit: contain; }
 .brand strong { display: block; line-height: 1.1; white-space: nowrap; }
 .account {
   display: block;

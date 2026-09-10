@@ -80,7 +80,7 @@ python3 -m http.server 8080
 | **Avtomatik javob** | Yangi xatga kartochkali javob avtomatik ketsin |
 | **Javob tili** | Mijozga ketadigan kartochka tili. Standart — **ingliz** |
 | **Brend nomi / rangi** | Kartochka yuqorisidagi panel. Panel sarlavhasi ham shu nomni oladi (standart: **Founder Capline Group**) |
-| **Logo havolasi** | Kartochkada brend nomi yonida turadigan rasm (to'g'ridan-to'g'ri URL) |
+| **Logo havolasi** | Kartochkada brend nomi yonida turadigan rasm. Bo'sh qoldirilsa, repodagi `logo.png` ishlatiladi |
 | **Javob berish muddati** | Kartochkadagi muddat qatori (standart: 7 ish kuni) |
 | **Javob sarlavhasi / matni** | Kartochka mazmuni |
 | **Keyingi qadamlar** | Raqamlangan ro'yxat — har bir qator alohida band |

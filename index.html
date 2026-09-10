@@ -7,8 +7,8 @@
 <meta name="description" content="Gmail'ga kelgan xatlar avtomatik navbatga olinadi, admin panelda ko'riladi va javob beriladi.">
 <meta name="theme-color" content="#0b1020">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="./icon.svg">
+<link rel="icon" href="./logo.png" type="image/png">
+<link rel="apple-touch-icon" href="./logo.png">
 <link rel="stylesheet" href="./style.css">
 </head>
 <body data-view="list">
@@ -17,7 +17,7 @@
   <button class="icon-btn menu-btn" id="menuBtn" data-i18n-title="menu.open" aria-label="Menu">☰</button>
   <button class="icon-btn back-btn" id="backBtn" data-i18n-title="top.back" aria-label="Back">‹</button>
   <div class="brand">
-    <img src="./icon.svg" alt="" width="28" height="28">
+    <img src="./logo.png" alt="" width="28" height="28" class="brand-logo">
     <div>
       <strong id="brandLabel">Capline Group</strong>
       <span class="account" id="accountLabel"></span>
@@ -71,7 +71,7 @@
 
   <section class="panel detail-panel" id="detailPanel">
     <div class="detail-empty" id="detailEmpty">
-      <img src="./icon.svg" alt="" width="64" height="64">
+      <img src="./logo.png" alt="" width="64" height="64" class="brand-logo">
       <h2 data-i18n="detail.emptyTitle"></h2>
       <p data-i18n="detail.emptyText"></p>
       <button class="primary" id="signInBtn" data-i18n="detail.signIn" hidden></button>
@@ -171,7 +171,7 @@
     </label>
 
     <label data-i18n="settings.logoUrl">
-      <input type="text" id="logoUrlInput" placeholder="https://sultonmusic.github.io/auto-mail/icon.svg" spellcheck="false">
+      <input type="text" id="logoUrlInput" placeholder="https://sultonmusic.github.io/auto-mail/logo.png" spellcheck="false">
     </label>
     <p class="hint" data-i18n="settings.logoHint"></p>
 
