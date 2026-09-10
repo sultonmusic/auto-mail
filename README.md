@@ -78,7 +78,8 @@ python3 -m http.server 8080
 | **Imzo** | Qo'lda yozilgan javob oxiriga qo'shiladigan matn |
 | **Panel tili** | Interfeys tili (uz / en / ru) |
 | **Avtomatik javob** | Yangi xatga kartochkali javob avtomatik ketsin |
-| **Javob tili** | Mijozga ketadigan kartochka tili. Standart — **ingliz** |
+| **Javob tili** | Mijozga ketadigan kartochka tili. Standart — **rus** |
+| **Jo'natuvchi nomi** | Gmail'da xat yonida ko'rinadigan nom (standart: brend nomi) |
 | **Brend nomi / rangi** | Kartochka yuqorisidagi panel. Panel sarlavhasi ham shu nomni oladi (standart: **Founder Capline Group**) |
 | **Logo havolasi** | Kartochkada brend nomi yonida turadigan rasm. Bo'sh qoldirilsa, repodagi `logo.png` ishlatiladi |
 | **Javob berish muddati** | Kartochkadagi muddat qatori (standart: 7 ish kuni) |
@@ -142,9 +143,34 @@ Xatolik bilan yuzlab xat ketib qolmasligi uchun bir nechta cheklov qo'yilgan:
 - HTML ko'rinishidagi xatlar `sandbox` qilingan `iframe` ichida ochiladi — ulardagi skriptlar ishlamaydi.
 - Ruxsatlar: `gmail.modify` (o'qish va belgilash), `gmail.send` (javob yuborish).
 
+## 24/7 avtomatik javob (Google Apps Script)
+
+Sayt ochiq bo'lmasa, brauzer tekshira olmaydi — bu statik ilovaning tabiiy chegarasi. Shu sababli `apps-script/Code.gs` faylida **Google serverida** ishlaydigan skript bor: telefon o'chiq bo'lsa ham har daqiqada pochtani tekshiradi va xuddi shu kartochka bilan javob yuboradi.
+
+### O'rnatish (bir marta, ~3 daqiqa)
+
+1. [script.google.com](https://script.google.com) → **New project**.
+2. `apps-script/Code.gs` fayl mazmunini to'liq nusxalab, tahrirlagichga qo'ying (eskisini o'chirib).
+3. Chapdagi **Services** yonidagi **+** → ro'yxatdan **Gmail API** → **Add**.
+4. Yuqoridagi funksiya ro'yxatidan **`setup`** ni tanlang → **Run**.
+5. Google ruxsat so'raydi: hisobni tanlang → **Advanced** → **Go to … (unsafe)** → **Allow**.
+   *(«unsafe» yozuvi skript Google tekshiruvidan o'tmagani uchun — bu sizning o'z skriptingiz.)*
+
+Tayyor. Endi har daqiqada tekshiriladi. To'xtatish uchun **`stop`** funksiyasini ishga tushiring.
+
+### Sozlash
+
+Faylning boshidagi `CONFIG` da hammasi turadi: brend nomi, jo'natuvchi nomi, rang, logo, javob matni, «keyingi qadamlar», javob berish muddati, bog'lanish manzili va Gmail qidiruv sharti.
+
+### Ikki marta javob ketmasligi
+
+Skript javob bergan suhbatga Gmail'da **`AutoReplied`** yorlig'ini qo'yadi va boshqa tegmaydi. Saytdagi ilova ham shu yorliqni ko'radi va bunday xatga javob yozmaydi — xat ochilganda «🤖 Apps Script javob bergan» deb turadi.
+
+Shunga qaramay, eng ishonchlisi — **bittasini tanlash**: Apps Script o'rnatgach, ilovadagi 🤖 tugmasini o'chirib qo'ying. Ilova baribir navbat, tahlil va qo'lda javob berish uchun kerak bo'ladi.
+
 ## Cheklovlar
 
-- Panel ochiq turganda ishlaydi — yopiq brauzerda fon rejimida tekshirmaydi (buning uchun server yoki Google Apps Script kerak bo'ladi).
+- Panel ochiq turganda ishlaydi — yopiq brauzerda fon rejimida tekshirmaydi. **24/7 kerak bo'lsa — yuqoridagi Apps Script bo'limiga qarang.**
 - Ilovalarni (attachment) ko'rsatadi, lekin yuklab olish Gmail orqali.
-- Avtomatik javob ham panel ochiq turganda ishlaydi — telefon qulflangan bo'lsa, ilova ochilgach yuboriladi.
+- Avtomatik javob ham panel ochiq turganda ishlaydi — telefon qulflangan bo'lsa, ilova ochilgach yuboriladi. Apps Script bu chegarani yo'q qiladi.
 - Google OAuth consent screen `Testing` holatida bo'lsa, token 7 kunda bir yangilanadi — `Publish app` qilinsa bu cheklov yo'qoladi.

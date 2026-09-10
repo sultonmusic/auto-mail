@@ -47,6 +47,7 @@
     switchAccount: $('switchAccountBtn'),
     responseTime: $('responseTimeInput'),
     logoUrl: $('logoUrlInput'),
+    senderName: $('senderNameInput'),
     categoryList: $('categoryList'),
     labelList: $('labelList'),
     boxIcon: $('boxIcon'),
@@ -117,6 +118,10 @@
     { id: 'ai:junk', icon: '🧹', key: 'box.junk', priority: 'junk' }
   ];
 
+  /* Apps Script javob bergan suhbatlarga shu yorliq qo'yiladi —
+     ikkalasi bir vaqtda ishlasa ham javob ikki marta ketmaydi. */
+  var SCRIPT_LABEL = 'AutoReplied';
+
   var COUNT_TTL = 5 * 60 * 1000;
   var FULL_SYNC_EVERY = 5 * 60 * 1000;   // shuncha vaqtda bir marta to'liq tekshiruv
   var RENEW_BEFORE = 8 * 60;             // token tugashiga shuncha soniya qolganda yangilanadi
@@ -130,6 +135,7 @@
     browse: [],               // Gmail'dan jonli o'qilgan xatlar
     browsing: false,
     labels: [],               // foydalanuvchi yorliqlari
+    scriptLabelId: '',        // Apps Script qo'yadigan yorliq
     counts: {},               // yorliq -> o'qilmaganlar soni
     countsAt: 0
   };
@@ -294,6 +300,10 @@
         .map(function (label) {
           return { id: label.id, icon: '🏷', name: label.name, query: 'label:"' + label.name + '"' };
         });
+      var scriptLabel = ui.labels.filter(function (label) {
+        return label.name === SCRIPT_LABEL;
+      })[0];
+      ui.scriptLabelId = scriptLabel ? scriptLabel.id : '';
       renderMenu();
       return refreshCounts(true);
     }, function () { /* ruxsat yo'q bo'lsa menyu tizim qutilari bilan qoladi */ });
@@ -354,6 +364,11 @@
   }
 
   /** Butun sahifani tanlangan tilga o'giradi. */
+  /** Gmail'da ko'rinadigan jo'natuvchi nomi. */
+  function senderName() {
+    return (Store.settings.senderName || Store.settings.brandName || 'Auto Mail').trim();
+  }
+
   function applyBrand() {
     var brand = (Store.settings.brandName || 'Auto Mail').trim();
     el.brandLabel.textContent = brand;
@@ -660,6 +675,8 @@
 
     el.cardReplyBtn.disabled = true;
     Gmail.sendReply({
+      fromName: senderName(),
+      fromEmail: ui.myEmail,
       to: data.fromEmail,
       subject: card.subject,
       text: card.text,
@@ -763,6 +780,8 @@
 
     var code = '#' + Template.ticketCode(ticket.threadId);
     Gmail.sendReply({
+      fromName: senderName(),
+      fromEmail: ui.myEmail,
       to: ticket.fromEmail,
       subject: Template.withCode(ticket.subject, code),
       body: fullText,
@@ -798,6 +817,9 @@
    */
   function autoReplyState(ticket) {
     if (ticket.autoReplied) return 'auto.sent';
+    if (ui.scriptLabelId && (ticket.labelIds || []).indexOf(ui.scriptLabelId) !== -1) {
+      return 'auto.script';
+    }
     if (!Store.settings.autoReply) return 'auto.off';
     if (ticket.priority === 'junk') return 'auto.junk';
     if (!ticket.fromEmail) return 'auto.robot';
@@ -826,6 +848,8 @@
           date: ticket.date
         });
         return Gmail.sendReply({
+          fromName: senderName(),
+          fromEmail: ui.myEmail,
           to: ticket.fromEmail,
           subject: card.subject,      // murojaat raqami bilan
           text: card.text,
@@ -887,6 +911,8 @@
       payload.text = card.text;
     }
 
+    payload.fromName = senderName();
+    payload.fromEmail = ui.myEmail;
     toast(t('composer.sending'));
     Gmail.sendMail(payload).then(function () {
       toast(t('toast.mailSent'));
@@ -1264,6 +1290,8 @@
     el.autoContact.value = settings.autoReplyContact;
     el.responseTime.value = settings.responseTime;
     el.logoUrl.value = settings.logoUrl;
+    el.senderName.value = settings.senderName;
+    el.senderName.placeholder = settings.brandName || 'Auto Mail';
     updateCardHints();
   }
 
@@ -1280,7 +1308,8 @@
       autoReplyButton: el.autoButton.value.trim(),
       autoReplyContact: el.autoContact.value.trim(),
       responseTime: el.responseTime.value.trim(),
-      logoUrl: el.logoUrl.value.trim()
+      logoUrl: el.logoUrl.value.trim(),
+      senderName: el.senderName.value.trim()
     });
   }
 

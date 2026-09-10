@@ -367,11 +367,17 @@
       var subject = options.subject || '';
       if (options.reply && !/^re:/i.test(subject)) subject = 'Re: ' + subject;
 
-      var lines = [
+      var lines = [];
+      /* Jo'natuvchi nomi — Gmail xat ro'yxatida shu ko'rinadi.
+         Manzil o'zgarmaydi, faqat ko'rinadigan nom. */
+      if (options.fromName && options.fromEmail) {
+        lines.push('From: ' + encodeHeaderValue(options.fromName) + ' <' + options.fromEmail + '>');
+      }
+      lines.push(
         'To: ' + options.to,
         'Subject: ' + encodeHeaderValue(subject),
         'MIME-Version: 1.0'
-      ];
+      );
       if (options.rfcMessageId) {
         lines.push('In-Reply-To: ' + options.rfcMessageId);
         lines.push('References: ' + ((options.references ? options.references + ' ' : '') + options.rfcMessageId));
@@ -401,6 +407,8 @@
     /** Xatga o'sha tred ichida javob yozadi. */
     sendReply: function (options) {
       return Gmail.sendMail({
+        fromName: options.fromName,
+        fromEmail: options.fromEmail,
         to: options.to,
         subject: options.subject,
         text: options.body || options.text,

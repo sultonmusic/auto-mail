@@ -44,7 +44,8 @@
          tayyor matn ishlatiladi (i18n.js dagi card.defaultX). */
       autoReply: false,
       autoReplySince: 0,        // shu vaqtdan keyingi xatlargagina javob beriladi
-      cardLang: 'en',           // mijozga ketadigan kartochka tili
+      cardLang: 'ru',           // mijozga ketadigan kartochka tili
+      senderName: '',           // bo'sh bo'lsa brend nomi ishlatiladi
       brandName: 'Founder Capline Group',
       logoUrl: '',
       brandColor: '#1b2338',
@@ -59,6 +60,7 @@
     tickets: {},   // threadId -> ticket
     templates: [], // { title, body }
     lastSync: 0,
+    migrated: 0,   // bir martalik ko'chirishlar bosqichi
     historyId: '', // Gmail tarixidagi oxirgi belgi
     account: ''    // navbat qaysi pochtaga tegishli
   };
@@ -78,6 +80,7 @@
         state.templates = Array.isArray(saved.templates) ? saved.templates : [];
         state.lastSync = saved.lastSync || 0;
         state.historyId = saved.historyId || '';
+        state.migrated = saved.migrated || 0;
         state.account = saved.account || '';
       }
     } catch (err) {
@@ -87,6 +90,13 @@
   }
 
   var state = load();
+
+  /* Javob tili rus tiliga o'tkazildi — bir marta, keyin foydalanuvchi
+     tanlovi saqlanadi. */
+  if (state.migrated < 1) {
+    state.settings.cardLang = 'ru';
+    state.migrated = 1;
+  }
 
   /* Eski standart tekshiruv oralig'i (60 soniya) yangisiga tushiriladi —
      avtomatik javob bir daqiqagacha kechikib qolmasin. */
@@ -181,6 +191,7 @@
         ticketCode: '',
         priority: verdict.priority,
         reasons: verdict.reasons,
+        labelIds: mail.labelIds || [],
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
