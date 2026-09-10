@@ -100,8 +100,10 @@ Yuqoridagi panelda ikkita tugma bor:
 
 ### Nega avtomatik javob kelmasligi mumkin
 
+Xatni ochsangiz, sarlavha ostida holat yozib turadi: **🤖 Avto-javob yuborilgan**, **🤖 navbatda** yoki nega to'xtagani (**o'chiq**, **bekorchi**, **robot manzil**, **o'z manzilingiz**, **yoqilgandan oldin kelgan**). Ya'ni taxmin qilib o'tirish shart emas.
+
 1. **O'chiq turibdi.** Ro'yxat tepasida sariq ogohlantirish chiqadi — **Yoqish** bosiladi (yoki yuqoridagi 🤖 tugmasi).
-2. **Xat o'zingizdan.** O'zingizga yozilgan xat na navbatga tushadi (`-from:me`), na javob oladi — bu ataylab shunday. Sinov uchun boshqa manzildan yuboring.
+2. **Xat o'zingizdan.** O'zingizga yozilgan xat na navbatga tushadi (`-from:me`), na javob oladi — cheksiz halqa bo'lmasligi uchun.
 3. **Robot manzil yoki bekorchi.** `noreply@` kabi manzillar va ma'nosiz matnlar chetlab o'tiladi.
 4. **Xat yoqishdan oldin kelgan.** Yoqilganda oxirgi 10 daqiqa qamrab olinadi, undan eskisiga javob ketmaydi.
 

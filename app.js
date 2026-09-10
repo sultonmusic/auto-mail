@@ -41,6 +41,7 @@
     boxList: $('boxList'),
     aiList: $('aiList'),
     aiBadge: $('aiBadge'),
+    autoBadge: $('autoBadge'),
     brandLabel: $('brandLabel'),
     addAccount: $('addAccountBtn'),
     switchAccount: $('switchAccountBtn'),
@@ -573,7 +574,8 @@
         status: ticket.status,
         note: ticket.note,
         priority: ticket.priority,
-        reasons: ticket.reasons
+        reasons: ticket.reasons,
+        autoReplied: ticket.autoReplied
       });
     }
 
@@ -624,6 +626,12 @@
       ((verdict.reasons || []).length
         ? ' · ' + verdict.reasons.map(function (key) { return t(key); }).join(', ')
         : '');
+
+    /* Avtomatik javob holati — nega ketgani yoki ketmagani ko'rinib tursin. */
+    var autoKey = autoReplyState(data.queue ? data : Object.assign({ date: data.date }, verdict, data));
+    el.autoBadge.hidden = false;
+    el.autoBadge.dataset.priority = autoKey === 'auto.sent' || autoKey === 'auto.pending' ? 'ok' : 'off';
+    el.autoBadge.textContent = t(autoKey);
     renderList();
 
     Gmail.getBody(data.messageId).then(renderBody).catch(function (err) {
@@ -784,15 +792,23 @@
     return ROBOT_HINTS.some(function (hint) { return value.indexOf(hint) !== -1; });
   }
 
+  /**
+   * Xatga avtomatik javob ketadimi, ketmasa nega — bitta joyda.
+   * @returns {string} 'auto.sent' | 'auto.pending' | to'xtatgan sabab kaliti
+   */
+  function autoReplyState(ticket) {
+    if (ticket.autoReplied) return 'auto.sent';
+    if (!Store.settings.autoReply) return 'auto.off';
+    if (ticket.priority === 'junk') return 'auto.junk';
+    if (!ticket.fromEmail) return 'auto.robot';
+    if (ui.myEmail && ticket.fromEmail.toLowerCase() === ui.myEmail.toLowerCase()) return 'auto.self';
+    if (isRobotAddress(ticket.fromEmail)) return 'auto.robot';
+    if (ticket.date < (Store.settings.autoReplySince || 0)) return 'auto.old';
+    return 'auto.pending';
+  }
+
   function shouldAutoReply(ticket) {
-    var settings = Store.settings;
-    if (!settings.autoReply) return false;
-    if (ticket.autoReplied) return false;
-    if (ticket.priority === 'junk') return false;
-    if (ticket.date < (settings.autoReplySince || 0)) return false;
-    if (!ticket.fromEmail) return false;
-    if (ui.myEmail && ticket.fromEmail.toLowerCase() === ui.myEmail.toLowerCase()) return false;
-    return !isRobotAddress(ticket.fromEmail);
+    return autoReplyState(ticket) === 'auto.pending';
   }
 
   /** Navbatdagi mos xatlarga birma-bir avtomatik javob yuboradi. */

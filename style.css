@@ -294,6 +294,8 @@ a { color: var(--accent); }
 }
 .ai-badge[data-priority="high"] { color: var(--new); border-color: color-mix(in srgb, var(--new) 40%, var(--line)); }
 .ai-badge[data-priority="junk"] { color: var(--muted); }
+.ai-badge[data-priority="ok"] { color: var(--done); border-color: color-mix(in srgb, var(--done) 40%, var(--line)); }
+.ai-badge[data-priority="off"] { color: var(--progress); border-color: color-mix(in srgb, var(--progress) 40%, var(--line)); }
 .ticket.unread .dot { background: var(--accent); }
 .ticket[data-status="new"] { border-left-color: var(--new); }
 .ticket[data-status="progress"] { border-left-color: var(--progress); }

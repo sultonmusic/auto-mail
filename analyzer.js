@@ -69,9 +69,11 @@
     var score = 0;
 
     var junkRatio = gibberishRatio(text);
-    var tooShort = text.replace(/\s/g, '').length < 4;
+    var length = text.replace(/\s/g, '').length;
 
-    if (junkRatio >= 0.5 || tooShort) {
+    /* Faqat ma'nosiz matn bekorchi hisoblanadi. Qisqa xat (masalan «01»
+       yoki «Hi») odam yozgan bo'lishi mumkin — uni yo'qotib qo'ymaymiz. */
+    if (junkRatio >= 0.5 || length === 0) {
       reasons.push('why.gibberish');
       return { priority: 'junk', score: -5, reasons: reasons };
     }
@@ -114,6 +116,11 @@
     if (junkRatio >= 0.3) {
       score -= 2;
       reasons.push('why.noisy');
+    }
+
+    if (length < 4) {
+      score -= 1;
+      reasons.push('why.short');
     }
 
     return {
