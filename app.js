@@ -841,6 +841,17 @@
 
   /** Navbatdagi mos xatlarga birma-bir avtomatik javob yuboradi. */
   function runAutoReplies() {
+    /* Yorliqlar ro'yxati avval yuklanishi shart: Apps Script ishlayotganini
+       aynan AutoReplied yorlig'idan bilamiz. Ilgari bu tekshiruv javob
+       yuborilgandan keyin bo'lardi va birinchi tekshiruvda javob ikki
+       marta ketardi. */
+    return (ui.labels.length ? Promise.resolve() : loadLabels()).then(function () {
+      if (scriptActive()) return 0;
+      return sendAutoReplies();
+    });
+  }
+
+  function sendAutoReplies() {
     var queue = Store.list().filter(shouldAutoReply).slice(0, MAX_AUTO_REPLIES_PER_SYNC);
     if (!queue.length) return Promise.resolve(0);
 
@@ -853,7 +864,14 @@
           subject: ticket.subject,
           date: ticket.date
         });
-        return Gmail.sendReply({
+        /* Skript shu orada javob berib ulgurgan bo'lishi mumkin — yuborishdan
+           oldin xatning hozirgi yorliqlarini so'raymiz. */
+        return Gmail.getHeaders(ticket.messageId).then(function (fresh) {
+          if (ui.scriptLabelId && (fresh.labelIds || []).indexOf(ui.scriptLabelId) !== -1) {
+            Store.update(ticket.id, { labelIds: fresh.labelIds });
+            return null;
+          }
+          return Gmail.sendReply({
           fromName: senderName(),
           fromEmail: ui.myEmail,
           to: ticket.fromEmail,
@@ -863,7 +881,9 @@
           threadId: ticket.id,
           rfcMessageId: ticket.rfcMessageId,
           references: ticket.references
-        }).then(function () {
+          });
+        }).then(function (result) {
+          if (result === null) return sent;      // skript javob bergan
           Store.markAutoReplied(ticket.id, card.ticket);
           return sent + 1;
         }, function (err) {
