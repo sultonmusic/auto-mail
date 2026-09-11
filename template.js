@@ -62,6 +62,15 @@
     });
   }
 
+  /** Salomlashuvda ism bo'lsa, uni qalin qiladi. Ism yo'q bo'lsa tegmaydi
+      (bo'sh qatorni almashtirish matn boshini buzib yuborardi). */
+  function boldName(greeting, name) {
+    if (!name) return greeting;
+    var escaped = escapeHtml(name);
+    if (greeting.indexOf(escaped) === -1) return greeting;
+    return greeting.replace(escaped, '<b>' + escaped + '</b>');
+  }
+
   function infoRow(label, value, color) {
     return '' +
       '<tr><td style="padding:0 0 12px 0;">' +
@@ -136,8 +145,7 @@
       '<h1 style="margin:0 0 16px 0;font:700 24px/1.3 Arial,Helvetica,sans-serif;color:#111827;">' +
         escapeHtml(title) + '</h1>' +
       '<p style="margin:0 0 14px 0;font:400 16px/1.6 Arial,Helvetica,sans-serif;color:#374151;">' +
-        escapeHtml(L('greeting', { name: data.name }))
-          .replace(escapeHtml(data.name), '<b>' + escapeHtml(data.name) + '</b>') + '</p>' +
+        boldName(escapeHtml(L('greeting', { name: data.name })), data.name) + '</p>' +
       (message ? '<p style="margin:0 0 22px 0;font:400 16px/1.6 Arial,Helvetica,sans-serif;color:#374151;">' +
         escapeHtml(message).replace(/\n/g, '<br>') + '</p>' : '') +
 

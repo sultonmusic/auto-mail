@@ -190,7 +190,7 @@
         'notify.many': 'Navbatga {count} ta yangi xat tushdi.'
       },
       card: {
-        greeting: 'Assalomu alaykum, {name}!',
+        greeting: 'Assalomu alaykum!',
         ticket: 'Murojaat raqami',
         subject: 'Mavzu',
         date: 'Qabul qilingan sana',
@@ -393,7 +393,7 @@
         'notify.many': '{count} new messages in the queue.'
       },
       card: {
-        greeting: 'Hello, {name}!',
+        greeting: 'Hello!',
         ticket: 'Ticket ID',
         subject: 'Request subject',
         date: 'Received on',
@@ -596,7 +596,7 @@
         'notify.many': 'Новых писем в очереди: {count}.'
       },
       card: {
-        greeting: 'Здравствуйте, {name}!',
+        greeting: 'Здравствуйте!',
         ticket: 'Номер обращения',
         subject: 'Тема обращения',
         date: 'Дата получения',
