@@ -304,6 +304,7 @@
         return label.name === SCRIPT_LABEL;
       })[0];
       ui.scriptLabelId = scriptLabel ? scriptLabel.id : '';
+      updateAutoReplyUi();
       renderMenu();
       return refreshCounts(true);
     }, function () { /* ruxsat yo'q bo'lsa menyu tizim qutilari bilan qoladi */ });
@@ -815,11 +816,16 @@
    * Xatga avtomatik javob ketadimi, ketmasa nega — bitta joyda.
    * @returns {string} 'auto.sent' | 'auto.pending' | to'xtatgan sabab kaliti
    */
+  /** Gmail'da AutoReplied yorlig'i bor bo'lsa, javobni Apps Script beryapti. */
+  function scriptActive() {
+    return !!ui.scriptLabelId;
+  }
+
   function autoReplyState(ticket) {
     if (ticket.autoReplied) return 'auto.sent';
-    if (ui.scriptLabelId && (ticket.labelIds || []).indexOf(ui.scriptLabelId) !== -1) {
-      return 'auto.script';
-    }
+    /* Apps Script ishlayotgan bo'lsa, ilova javob yozmaydi — aks holda
+       bitta xatga ikki marta javob ketardi. */
+    if (scriptActive()) return 'auto.script';
     if (!Store.settings.autoReply) return 'auto.off';
     if (ticket.priority === 'junk') return 'auto.junk';
     if (!ticket.fromEmail) return 'auto.robot';
@@ -1040,9 +1046,12 @@
   el.notifyBtn.addEventListener('click', toggleNotifications);
 
   function updateAutoReplyUi() {
-    var on = !!Store.settings.autoReply;
+    var script = scriptActive();
+    var on = script || !!Store.settings.autoReply;
     el.autoReplyBtn.dataset.on = on ? 'yes' : 'no';
     el.autoReplyBtn.textContent = on ? '🤖' : '💤';
+    el.autoReplyBtn.title = t(script ? 'auto.script' : 'top.autoReply');
+    /* Skript ishlayotganda «o'chiq» ogohlantirishi ma'nosiz. */
     el.autoReplyNotice.hidden = on;
   }
 
@@ -1058,6 +1067,7 @@
   }
 
   el.autoReplyBtn.addEventListener('click', function () {
+    if (scriptActive()) return toast(t('toast.scriptHandles'));
     setAutoReply(!Store.settings.autoReply);
   });
 

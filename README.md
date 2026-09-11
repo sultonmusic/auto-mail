@@ -180,7 +180,7 @@ Faylning boshidagi `CONFIG` da hammasi turadi: brend nomi, jo'natuvchi nomi, ran
 
 Skript javob bergan suhbatga Gmail'da **`AutoReplied`** yorlig'ini qo'yadi va boshqa tegmaydi. Saytdagi ilova ham shu yorliqni ko'radi va bunday xatga javob yozmaydi — xat ochilganda «🤖 Apps Script javob bergan» deb turadi.
 
-Shunga qaramay, eng ishonchlisi — **bittasini tanlash**: Apps Script o'rnatgach, ilovadagi 🤖 tugmasini o'chirib qo'ying. Ilova baribir navbat, tahlil va qo'lda javob berish uchun kerak bo'ladi.
+Gmail'da `AutoReplied` yorlig'i paydo bo'lishi bilan ilova avtomatik javobni **butunlay to'xtatadi** — 🤖 tugmasi «Apps Script javob bermoqda» holatiga o'tadi va xat ochilganda ham shu yozuv turadi. Qo'lda **🤖 Kartochka bilan javob berish** tugmasi ishlaydi.
 
 ## Cheklovlar
 
