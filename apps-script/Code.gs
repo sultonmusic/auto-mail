@@ -238,7 +238,13 @@ function buildCard_(data) {
       'style="display:block;width:44px;height:44px;border-radius:10px;background:#ffffff;"></td>'
     : '';
 
+  /* Pochta ro'yxatidagi uchinchi qator shu matndan olinadi. */
+  var preview = fill_(L.greeting, { name: data.name }) + ' ' + fill_(CONFIG.title, data);
+
   return '<!doctype html><html><body style="margin:0;padding:0;background:#eef1f7;">' +
+    '<div style="display:none;font-size:1px;color:#eef1f7;line-height:1px;max-height:0;' +
+    'max-width:0;opacity:0;overflow:hidden;">' + escape_(preview) +
+    '&#8203;&#847;&#8203;&#847;&#8203;&#847;&#8203;&#847;&#8203;&#847;</div>' +
     '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eef1f7;padding:24px 12px;">' +
     '<tr><td align="center">' +
     '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%;max-width:600px;">' +
@@ -276,9 +282,9 @@ function buildCard_(data) {
 function buildText_(data) {
   var L = CONFIG.labels;
   var lines = [
-    fill_(CONFIG.title, data),
-    '',
     fill_(L.greeting, { name: data.name }),
+    '',
+    fill_(CONFIG.title, data),
     fill_(CONFIG.text, data),
     '',
     L.ticket + ': ' + data.ticket,

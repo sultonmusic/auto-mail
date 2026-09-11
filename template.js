@@ -103,8 +103,16 @@
     var responseTime = fill(settings.responseTime || L('defaultResponseTime'), data);
     var logo = (settings.logoUrl || '').trim() || defaultLogo();
 
+    /* Pochta ro'yxatida ko'rinadigan matn (preheader). Ko'rinmas blok,
+       lekin Gmail aynan shuni uchinchi qatorda ko'rsatadi — shuning uchun
+       u brend nomidan emas, murojaatchining ismidan boshlanadi. */
+    var preview = L('greeting', { name: data.name }) + ' ' + title;
+
     var html = '' +
 '<!doctype html><html><body style="margin:0;padding:0;background:#eef1f7;">' +
+'<div style="display:none;font-size:1px;color:#eef1f7;line-height:1px;max-height:0;' +
+'max-width:0;opacity:0;overflow:hidden;">' + escapeHtml(preview) +
+'&#8203;&#847;&#8203;&#847;&#8203;&#847;&#8203;&#847;&#8203;&#847;</div>' +
 '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#eef1f7;padding:24px 12px;">' +
 '<tr><td align="center">' +
   '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%;max-width:600px;">' +
@@ -173,9 +181,9 @@
 '</td></tr></table></body></html>';
 
     var text = [
-      title,
-      '',
       L('greeting', { name: data.name }),
+      '',
+      title,
       message,
       '',
       L('ticket') + ': ' + data.ticket,
