@@ -67,6 +67,45 @@ function setup() {
   Logger.log('Tayyor: har daqiqada tekshiriladi. Sinash uchun autoReply() ni ishga tushiring.');
 }
 
+/**
+ * Sinov: o'zingizga bitta kartochka yuboradi, shunda ko'rinishini
+ * darhol tekshirib olasiz. Navbatga va yorliqlarga tegmaydi.
+ */
+function testCard() {
+  var me = Session.getActiveUser().getEmail();
+  var data = {
+    name: 'Sulton',
+    subject: 'Тест',
+    ticket: '#' + ticketCode_('test'),
+    date: formatDate_(new Date())
+  };
+  var boundary = 'automail-' + Utilities.getUuid();
+  var mime = [
+    'From: ' + encodeHeader_(CONFIG.senderName) + ' <' + me + '>',
+    'To: ' + me,
+    'Subject: ' + encodeHeader_('[ТЕСТ] ' + fill_(CONFIG.title, data)),
+    'MIME-Version: 1.0',
+    'Content-Type: multipart/alternative; boundary="' + boundary + '"',
+    '',
+    '--' + boundary,
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: 8bit',
+    '',
+    buildText_(data),
+    '--' + boundary,
+    'Content-Type: text/html; charset="UTF-8"',
+    'Content-Transfer-Encoding: 8bit',
+    '',
+    buildCard_(data),
+    '--' + boundary + '--'
+  ].join('\r\n');
+
+  Gmail.Users.Messages.send({
+    raw: Utilities.base64EncodeWebSafe(Utilities.newBlob(mime).getBytes())
+  }, 'me');
+  Logger.log('Sinov xati ' + me + ' manziliga yuborildi.');
+}
+
 /** Avtomatik javobni butunlay to'xtatadi. */
 function stop() {
   ScriptApp.getProjectTriggers().forEach(function (trigger) {
@@ -326,6 +365,13 @@ function fill_(text, data) {
   return String(text || '').replace(/\{(\w+)\}/g, function (match, key) {
     return data[key] !== undefined ? data[key] : match;
   });
+}
+
+/** Sarlavhada lotin bo'lmagan harflar bo'lsa, MIME qoidasiga o'raydi. */
+function encodeHeader_(text) {
+  var value = String(text || '');
+  if (/^[\x00-\x7F]*$/.test(value)) return value;
+  return '=?UTF-8?B?' + Utilities.base64Encode(Utilities.newBlob(value).getBytes()) + '?=';
 }
 
 function escape_(text) {

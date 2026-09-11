@@ -156,7 +156,19 @@ Sayt ochiq bo'lmasa, brauzer tekshira olmaydi — bu statik ilovaning tabiiy che
 5. Google ruxsat so'raydi: hisobni tanlang → **Advanced** → **Go to … (unsafe)** → **Allow**.
    *(«unsafe» yozuvi skript Google tekshiruvidan o'tmagani uchun — bu sizning o'z skriptingiz.)*
 
-Tayyor. Endi har daqiqada tekshiriladi. To'xtatish uchun **`stop`** funksiyasini ishga tushiring.
+Tayyor. Endi har daqiqada tekshiriladi — sayt ochiq bo'lmasa ham.
+
+Kodni telefonda nusxalash uchun qulay havola:
+[raw.githubusercontent.com/sultonmusic/auto-mail/main/apps-script/Code.gs](https://raw.githubusercontent.com/sultonmusic/auto-mail/main/apps-script/Code.gs)
+
+**Funksiyalar:**
+
+| Funksiya | Vazifasi |
+|---|---|
+| `setup` | Har daqiqalik tekshiruvni yoqadi (bir marta bosiladi) |
+| `testCard` | O'zingizga bitta sinov kartochkasini yuboradi — ko'rinishini tekshirish uchun |
+| `autoReply` | Tekshiruvni qo'lda bir marta ishga tushiradi |
+| `stop` | Avtomatik javobni butunlay to'xtatadi |
 
 ### Sozlash
 
