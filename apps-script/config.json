@@ -1,0 +1,32 @@
+{
+  "brand": "Founder Capline Group",
+  "senderName": "Founder Capline Group",
+  "color": "#1b2338",
+  "logoUrl": "https://sultonmusic.github.io/auto-mail/logo.png",
+  "contact": "",
+  "buttonUrl": "",
+  "buttonText": "Перейти на сайт",
+
+  "title": "Ваше обращение получено",
+  "text": "Спасибо за письмо! Я, Juraev Sulton, ознакомлюсь с обращением и отвечу на этот адрес в ближайшее время.",
+  "steps": [
+    "Я изучу детали вашего обращения.",
+    "Если что-то нужно уточнить, свяжусь с вами.",
+    "Ответ придёт на этот адрес отдельным письмом."
+  ],
+  "responseTime": "В течение 7 рабочих дней",
+  "labels": {
+    "ticket": "Номер обращения",
+    "subject": "Тема обращения",
+    "date": "Дата получения",
+    "responseTime": "Срок ответа",
+    "steps": "Что будет дальше",
+    "greeting": "Здравствуйте!",
+    "autoNote": "Это сообщение отправлено автоматически. Я отвечу лично в ближайшее время",
+    "autoNoteContact": ", срочные вопросы: {contact}"
+  },
+
+  "query": "in:inbox -from:me newer_than:1h",
+  "maxPerRun": 10,
+  "minMinutesOld": 0
+}

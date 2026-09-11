@@ -12,6 +12,21 @@
 
 /* ─────────────── Sozlamalar ─────────────── */
 
+/**
+ * Matnlar shu manzildan o'qiladi va soatiga bir marta yangilanadi.
+ * Ya'ni kartochka so'zlarini o'zgartirish uchun bu faylni qayta
+ * nusxalash shart emas — repodagi config.json tahrirlansa yetadi.
+ * Butunlay mustaqil ishlashini xohlasangiz, bu qatorni '' qiling.
+ */
+var REMOTE_CONFIG_URL = 'https://sultonmusic.github.io/auto-mail/apps-script/config.json';
+
+/**
+ * Bu yerga yozilgan qiymatlar HAR DOIM ustun turadi — internetdagi
+ * fayl ham, quyidagi standart qiymatlar ham uni bosib o'ta olmaydi.
+ * Masalan:  var LOCAL = { senderName: 'Boshqa nom', maxPerRun: 3 };
+ */
+var LOCAL = {};
+
 var CONFIG = {
   brand: 'Founder Capline Group',
   senderName: 'Founder Capline Group',   // Gmail'da ko'rinadigan nom
@@ -55,6 +70,48 @@ var ROBOT_HINTS = ['noreply', 'no-reply', 'donotreply', 'do-not-reply', 'mailer-
   'postmaster', 'bounce', 'notification', 'notifications', 'automated', 'newsletter',
   'mailer', 'support@google'];
 
+/**
+ * Internetdagi sozlamalarni CONFIG ustiga qo'yadi, so'ng LOCAL ni.
+ * Fayl ochilmasa yoki buzuq bo'lsa — quyidagi standart qiymatlar
+ * bilan ishlayveradi, hech narsa to'xtamaydi.
+ */
+function applyRemoteConfig_() {
+  if (REMOTE_CONFIG_URL) {
+    var cache = CacheService.getScriptCache();
+    var raw = cache.get('remoteConfig');
+
+    if (!raw) {
+      try {
+        var response = UrlFetchApp.fetch(REMOTE_CONFIG_URL, { muteHttpExceptions: true });
+        if (response.getResponseCode() === 200) {
+          raw = response.getContentText();
+          cache.put('remoteConfig', raw, 3600);   // bir soat saqlanadi
+        }
+      } catch (err) {
+        Logger.log('Sozlamani yuklab bo\'lmadi: ' + err.message);
+      }
+    }
+
+    if (raw) {
+      try {
+        var remote = JSON.parse(raw);
+        Object.keys(remote).forEach(function (key) { CONFIG[key] = remote[key]; });
+      } catch (err) {
+        Logger.log('config.json buzuq: ' + err.message);
+      }
+    }
+  }
+
+  Object.keys(LOCAL).forEach(function (key) { CONFIG[key] = LOCAL[key]; });
+}
+
+/** Sozlamani darhol qayta o'qish (bir soat kutmasdan). */
+function refreshConfig() {
+  CacheService.getScriptCache().remove('remoteConfig');
+  applyRemoteConfig_();
+  Logger.log('Yangilandi. Javob matni: ' + CONFIG.title);
+}
+
 /* ─────────────── O'rnatish ─────────────── */
 
 /** Bir marta ishga tushiring: har daqiqada tekshiruvni yoqadi. */
@@ -72,6 +129,7 @@ function setup() {
  * darhol tekshirib olasiz. Navbatga va yorliqlarga tegmaydi.
  */
 function testCard() {
+  applyRemoteConfig_();
   var me = Session.getActiveUser().getEmail();
   var data = {
     name: 'Sulton',
@@ -117,6 +175,7 @@ function stop() {
 /* ─────────────── Asosiy ish ─────────────── */
 
 function autoReply() {
+  applyRemoteConfig_();
   var label = getOrCreateLabel_(CONFIG.label);
   var query = CONFIG.query + ' -label:' + CONFIG.label;
   var threads = GmailApp.search(query, 0, CONFIG.maxPerRun);

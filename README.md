@@ -170,9 +170,24 @@ Kodni telefonda nusxalash uchun qulay havola:
 | `autoReply` | Tekshiruvni qo'lda bir marta ishga tushiradi |
 | `stop` | Avtomatik javobni butunlay to'xtatadi |
 
-### Sozlash
+### Sozlash — qayta nusxalash shart emas
 
-Faylning boshidagi `CONFIG` da hammasi turadi: brend nomi, jo'natuvchi nomi, rang, logo, javob matni, «keyingi qadamlar», javob berish muddati, bog'lanish manzili va Gmail qidiruv sharti.
+Skript matnlarni `apps-script/config.json` dan o'qiydi va **soatiga bir marta** yangilab turadi. Ya'ni kartochka so'zlarini, brend nomini, rangni, muddatni yoki qidiruv shartini o'zgartirish uchun Apps Script'dagi kodni qayta qo'yish kerak emas — shu faylni repoda tahrirlasangiz yetadi.
+
+Darhol ko'rish uchun skriptdagi **`refreshConfig`** funksiyasini ishga tushiring (bir soat kutmaysiz).
+
+| Nima o'zgardi | Nima qilish kerak |
+|---|---|
+| Matn, brend, rang, logo, muddat, qidiruv sharti | `config.json` ni tahrirlang — skript o'zi oladi |
+| Skriptning ishlash mantiqi (kamdan-kam) | `Code.gs` ni qayta nusxalang |
+
+Faqat shu skript uchun amal qiladigan sozlama kerak bo'lsa, `Code.gs` boshidagi `LOCAL` obyektiga yozing — u har doim ustun turadi:
+
+```js
+var LOCAL = { senderName: 'Boshqa nom', maxPerRun: 3 };
+```
+
+Internet bo'lmasa yoki fayl ochilmasa, skript `Code.gs` ichidagi standart qiymatlar bilan ishlayveradi — hech narsa to'xtamaydi. Mustaqil ishlashini xohlasangiz, `REMOTE_CONFIG_URL` ni `''` qiling.
 
 ⚠️ **`query` ni ehtiyot bo'lib o'zgartiring.** Standart holatda `newer_than:1h` — faqat oxirgi bir soatda kelgan xatlar. Uni `newer_than:2d` qilsangiz, birinchi yugurishdayoq pochtangizdagi ikki kunlik xatlarga javob ketadi (ko'pi bilan `maxPerRun` tasiga). Sinashdan oldin `maxPerRun` ni 1 ga tushirib ko'rish ham foydali.
 
