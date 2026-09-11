@@ -174,6 +174,8 @@ Kodni telefonda nusxalash uchun qulay havola:
 
 Faylning boshidagi `CONFIG` da hammasi turadi: brend nomi, jo'natuvchi nomi, rang, logo, javob matni, «keyingi qadamlar», javob berish muddati, bog'lanish manzili va Gmail qidiruv sharti.
 
+⚠️ **`query` ni ehtiyot bo'lib o'zgartiring.** Standart holatda `newer_than:1h` — faqat oxirgi bir soatda kelgan xatlar. Uni `newer_than:2d` qilsangiz, birinchi yugurishdayoq pochtangizdagi ikki kunlik xatlarga javob ketadi (ko'pi bilan `maxPerRun` tasiga). Sinashdan oldin `maxPerRun` ni 1 ga tushirib ko'rish ham foydali.
+
 ### Ikki marta javob ketmasligi
 
 Skript javob bergan suhbatga Gmail'da **`AutoReplied`** yorlig'ini qo'yadi va boshqa tegmaydi. Saytdagi ilova ham shu yorliqni ko'radi va bunday xatga javob yozmaydi — xat ochilganda «🤖 Apps Script javob bergan» deb turadi.

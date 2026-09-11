@@ -43,7 +43,7 @@ var CONFIG = {
 
   /* Ish qoidalari */
   label: 'AutoReplied',                   // javob berilgan suhbatlarga qo'yiladi
-  query: 'in:inbox -from:me newer_than:2d',
+  query: 'in:inbox -from:me newer_than:1h',   // faqat yangi xatlar; 2d qilsangiz eski xatlarga ham javob ketadi
   maxPerRun: 10,                          // bir yugurishda ko'pi bilan shuncha javob
   minMinutesOld: 0                        // xat kelgach shuncha daqiqa kutiladi
 };
