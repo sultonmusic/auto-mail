@@ -212,6 +212,10 @@ a { color: var(--accent); }
   background: color-mix(in srgb, var(--progress) 12%, transparent);
   font-size: 13px;
 }
+.notice.urgent {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
 .notice button {
   margin-left: auto;
   border: 0;

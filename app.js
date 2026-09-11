@@ -34,6 +34,8 @@
     notifyBtn: $('notifyBtn'),
     autoReplyBtn: $('autoReplyBtn'),
     autoReplyNotice: $('autoReplyNotice'),
+    signInNotice: $('signInNotice'),
+    bannerSignIn: $('bannerSignIn'),
     enableAutoReply: $('enableAutoReply'),
     cardReplyBtn: $('cardReplyBtn'),
     scrim: $('scrim'),
@@ -1093,6 +1095,8 @@
 
   el.enableAutoReply.addEventListener('click', function () { setAutoReply(true); });
 
+  el.bannerSignIn.addEventListener('click', function () { signInFlow(); });
+
   function sync(interactive) {
     if (ui.syncing) return Promise.resolve();
     if (!Gmail.isConfigured()) {
@@ -1150,7 +1154,11 @@
         return refreshCounts(false);
       })
       .catch(function (err) {
-        setStatus('err', t('status.error'));
+        /* Kalit eskirgani xato emas — shunchaki qayta kirish kerak. */
+        var needsSignIn = !Gmail.isSignedIn();
+        setStatus(needsSignIn ? 'off' : 'err',
+          t(needsSignIn ? 'status.needSignIn' : 'status.error'));
+        updateAuthUi();
         if (interactive) {
           toast(err.message);
           return;
@@ -1268,7 +1276,11 @@
 
   function updateAuthUi() {
     var signedIn = Gmail.isSignedIn();
-    el.signIn.hidden = signedIn || !Gmail.isConfigured();
+    var configured = Gmail.isConfigured();
+    el.signIn.hidden = signedIn || !configured;
+    /* Telefonda xat ro'yxati ochiq turganda o'ng panel ko'rinmaydi,
+       shuning uchun kirish tugmasi ro'yxat tepasida ham bo'lishi kerak. */
+    el.signInNotice.hidden = signedIn || !configured;
     el.statusPill.title = t(signedIn ? 'status.signOutHint' : 'status.signInHint');
   }
 

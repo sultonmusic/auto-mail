@@ -92,6 +92,17 @@ Matnlarda o'rin egallovchilar ishlaydi: `{name}`/`{ism}`, `{subject}`/`{mavzu}`,
 
 Kartochka matn maydonlari **bo'sh** qoldirilsa, tanlangan javob tilidagi tayyor matn ishlatiladi — «Tanlangan tildagi tayyor matnni qo'yish» tugmasi uni maydonlarga chiqaradi.
 
+### Kirish nega vaqti-vaqti bilan so'raladi
+
+Google brauzerga **1 soatlik** kalit beradi va uni yangilash uchun brauzerda Google sessiyasi ochiq bo'lishi kerak. Android Chrome uchinchi tomon cookie'larini cheklaganda bu yangilanish bloklanib qoladi — shunda ilova qayta kirishni so'raydi.
+
+Buni butunlay yo'q qilish statik saytda mumkin emas: doimiy kalitni saqlash uchun server kerak, u esa o'g'irlansa butun pochta ochiladi. Shuning uchun ikki narsa qilingan:
+
+- Kalit muddati tugashiga 8 daqiqa qolganda **jimgina yangilanadi**, jimgina yangilash ishlamasa yana ikki marta urinib ko'riladi.
+- Baribir uzilsa, ro'yxat tepasida **«Kirish»** tugmasi chiqadi — bir bosish kifoya, parol so'ralmaydi (Google hisobingiz brauzerda ochiq bo'lsa, faqat hisobni tasdiqlaysiz).
+
+Eng muhimi: **avtomatik javob bunga bog'liq emas.** U Google serverida (Apps Script) ishlaydi, shuning uchun ilovaga kirmagan bo'lsangiz ham mijozlar javob oladi. Ilovaga kirish faqat navbatni ko'rish va qo'lda javob yozish uchun kerak.
+
 ### Tez yoqish tugmalari
 
 Yuqoridagi panelda ikkita tugma bor:
