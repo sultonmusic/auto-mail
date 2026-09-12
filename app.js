@@ -193,8 +193,8 @@
     if (date.toDateString() === now.toDateString()) {
       return ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
     }
-    if (date.getFullYear() === now.getFullYear()) return Template.shortDate(time);
-    return Template.longDate(time);
+    if (date.getFullYear() === now.getFullYear()) return I18n.shortDate(time);
+    return I18n.longDate(time);
   }
 
   /* ---------- chap menyu ---------- */
