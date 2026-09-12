@@ -1,6 +1,6 @@
 /* Auto Mail — oflayn qobiq. Faqat o'z fayllarimizni keshlaydi;
    Gmail API so'rovlari hech qachon keshlanmaydi. */
-var CACHE = 'automail-v3';
+var CACHE = 'automail-v4';
 var SHELL = [
   './',
   './index.html',
@@ -18,8 +18,14 @@ var SHELL = [
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
-    caches.open(CACHE).then(function (cache) { return cache.addAll(SHELL); })
-      .then(function () { return self.skipWaiting(); })
+    caches.open(CACHE).then(function (cache) {
+      /* {cache:'reload'} — brauzerning eski nusxasini o'tkazib yuborib,
+         serverdan yangisini oladi. Aks holda o'rnatishda ham eskisi
+         keshga tushib qolardi. */
+      return cache.addAll(SHELL.map(function (path) {
+        return new Request(path, { cache: 'reload' });
+      }));
+    }).then(function () { return self.skipWaiting(); })
   );
 });
 
@@ -38,7 +44,10 @@ self.addEventListener('fetch', function (event) {
   if (new URL(request.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(request).then(function (response) {
+    /* 'no-cache' — har safar serverdan so'raladi, lekin fayl o'zgarmagan
+       bo'lsa server 304 qaytaradi (trafik sarflanmaydi). Shu tufayli
+       yangilangan kod darhol yetib keladi. */
+    fetch(request, { cache: 'no-cache' }).then(function (response) {
       var copy = response.clone();
       caches.open(CACHE).then(function (cache) { cache.put(request, copy); });
       return response;
